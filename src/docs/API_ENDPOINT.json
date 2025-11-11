@@ -1,0 +1,1593 @@
+{
+  "endpoints": [
+    {
+      "controller": "AuthController",
+      "basePath": "/auth",
+      "routes": [
+        {
+          "method": "POST",
+          "url": "/auth/register",
+          "summary": "User registration",
+          "public": true,
+          "bodySchema": {
+            "type": "object",
+            "required": ["email", "password", "confirmPassword"],
+            "properties": {
+              "email": { "type": "string", "format": "email" },
+              "password": {
+                "type": "string",
+                "minLength": 8,
+                "constraints": {
+                  "minNumbers": 1,
+                  "minSymbols": 1,
+                  "minUppercase": 1
+                }
+              },
+              "confirmPassword": { "type": "string", "constRef": "password" }
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "url": "/auth/login",
+          "summary": "User login",
+          "public": true,
+          "bodySchema": {
+            "type": "object",
+            "required": ["email", "password"],
+            "properties": {
+              "email": { "type": "string", "format": "email" },
+              "password": { "type": "string" },
+              "isRemember": { "type": "boolean", "default": false }
+            }
+          },
+          "cookiesSet": ["accessToken", "refreshToken"]
+        },
+        {
+          "method": "GET",
+          "url": "/auth/google",
+          "summary": "Google OAuth login",
+          "public": true,
+          "querySchema": {
+            "type": "object",
+            "properties": { "redirect": { "type": "string" } }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/auth/google/callback",
+          "summary": "Google OAuth callback",
+          "public": true,
+          "cookiesSet": ["accessToken", "refreshToken"]
+        },
+        {
+          "method": "POST",
+          "url": "/auth/refresh-token",
+          "summary": "Refresh access token",
+          "public": true,
+          "cookiesRead": ["refreshToken"],
+          "cookiesSet": ["accessToken"]
+        },
+        {
+          "method": "POST",
+          "url": "/auth/logout",
+          "summary": "Logout current device",
+          "auth": { "bearer": true },
+          "cookiesClear": ["accessToken", "refreshToken"]
+        },
+        {
+          "method": "DELETE",
+          "url": "/auth/logout-all",
+          "summary": "Logout all devices",
+          "auth": { "bearer": true }
+        },
+        {
+          "method": "GET",
+          "url": "/auth/devices",
+          "summary": "Get devices information",
+          "auth": { "bearer": true }
+        },
+        {
+          "method": "GET",
+          "url": "/auth/verify-email",
+          "summary": "Verify email address",
+          "public": true,
+          "querySchema": {
+            "type": "object",
+            "required": ["token"],
+            "properties": { "token": { "type": "string" } }
+          }
+        },
+        {
+          "method": "POST",
+          "url": "/auth/forgot-password",
+          "summary": "Send password reset email",
+          "public": true,
+          "bodySchema": {
+            "type": "object",
+            "required": ["email"],
+            "properties": { "email": { "type": "string" } }
+          }
+        },
+        {
+          "method": "POST",
+          "url": "/auth/reset-password",
+          "summary": "Reset password",
+          "public": true,
+          "bodySchema": {
+            "type": "object",
+            "required": ["token", "password", "confirmPassword"],
+            "properties": {
+              "token": { "type": "string" },
+              "password": {
+                "type": "string",
+                "minLength": 8,
+                "constraints": {
+                  "minNumbers": 1,
+                  "minSymbols": 1,
+                  "minUppercase": 1
+                }
+              },
+              "confirmPassword": { "type": "string", "constRef": "password" }
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "url": "/auth/resend-verification",
+          "summary": "Resend verification email",
+          "auth": { "bearer": true }
+        },
+        {
+          "method": "GET",
+          "url": "/auth/me",
+          "summary": "Get current user profile",
+          "auth": { "bearer": true }
+        }
+      ]
+    },
+    {
+      "controller": "UserController",
+      "basePath": "/user",
+      "routes": [
+        {
+          "method": "GET",
+          "url": "/user/profile",
+          "summary": "Get user profile",
+          "auth": { "bearer": true }
+        },
+        {
+          "method": "PUT",
+          "url": "/user/profile",
+          "summary": "Update user profile",
+          "auth": { "bearer": true },
+          "guards": ["JwtAuthGuard", "ActiveGuard"],
+          "bodySchema": {
+            "type": "object",
+            "properties": { "username": { "type": "string" } }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/user/profile/password",
+          "summary": "Update user password",
+          "auth": { "bearer": true },
+          "guards": ["JwtAuthGuard", "ActiveGuard"],
+          "bodySchema": {
+            "type": "object",
+            "required": ["oldPassword", "newPassword", "confirmPassword"],
+            "properties": {
+              "oldPassword": { "type": "string" },
+              "newPassword": {
+                "type": "string",
+                "minLength": 8,
+                "constraints": {
+                  "minNumbers": 1,
+                  "minSymbols": 1,
+                  "minUppercase": 1
+                }
+              },
+              "confirmPassword": { "type": "string", "constRef": "newPassword" }
+            }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/user/profile/avatar",
+          "summary": "Update user avatar",
+          "auth": { "bearer": true },
+          "guards": ["JwtAuthGuard", "ActiveGuard"],
+          "multipart": {
+            "field": "avatar",
+            "maxSizeMB": 5,
+            "types": ["jpg", "jpeg", "png", "webp"]
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/user/reading-history",
+          "summary": "Get user reading history",
+          "auth": { "bearer": true }
+        },
+        {
+          "method": "GET",
+          "url": "/user/favorite",
+          "summary": "Get user favorite books",
+          "auth": { "bearer": true }
+        },
+        {
+          "method": "GET",
+          "url": "/user/purchased",
+          "summary": "Get user purchased books",
+          "auth": { "bearer": true }
+        }
+      ]
+    },
+    {
+      "controller": "BookController",
+      "basePath": "/books",
+      "routes": [
+        {
+          "method": "GET",
+          "url": "/books",
+          "summary": "Get all books with pagination",
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "string", "format": "numberString" },
+              "pageSize": { "type": "string", "format": "numberString" },
+              "keyword": { "type": "string" },
+              "category": { "type": "string" },
+              "categories": { "type": "array", "items": { "type": "string" } },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "latest",
+                  "top_rated",
+                  "most_viewed",
+                  "price_asc",
+                  "price_desc",
+                  "free"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/books/private",
+          "summary": "Get books for authenticated user",
+          "auth": { "bearer": true },
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "string", "format": "numberString" },
+              "pageSize": { "type": "string", "format": "numberString" },
+              "keyword": { "type": "string" },
+              "category": { "type": "string" },
+              "categories": { "type": "array", "items": { "type": "string" } },
+              "sort": {
+                "type": "string",
+                "enum": [
+                  "latest",
+                  "top_rated",
+                  "most_viewed",
+                  "price_asc",
+                  "price_desc",
+                  "free"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/books/search",
+          "summary": "Search books",
+          "querySchema": {
+            "type": "object",
+            "required": ["query"],
+            "properties": { "query": { "type": "string" } }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/books/featured",
+          "summary": "Get featured books"
+        },
+        {
+          "method": "GET",
+          "url": "/books/latest",
+          "summary": "Get latest books"
+        },
+        { "method": "GET", "url": "/books/free", "summary": "Get free books" },
+        {
+          "method": "GET",
+          "url": "/books/popular",
+          "summary": "Get popular books"
+        },
+        {
+          "method": "GET",
+          "url": "/books/:slug",
+          "summary": "Get book detail by slug",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["slug"],
+            "properties": { "slug": { "type": "string" } }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/books/:slug/chapters",
+          "summary": "Get book chapters",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["slug"],
+            "properties": { "slug": { "type": "string" } }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/books/:slug/reviews",
+          "summary": "Get book reviews",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["slug"],
+            "properties": { "slug": { "type": "string" } }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/books/:slug/comments",
+          "summary": "Get book comments",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["slug"],
+            "properties": { "slug": { "type": "string" } }
+          }
+        },
+        {
+          "method": "POST",
+          "url": "/books",
+          "summary": "Create new book (Publisher only)",
+          "auth": { "bearer": true, "roles": ["PUBLISHER"] },
+          "guards": ["RoleGuard", "JwtAuthGuard"],
+          "bodySchema": {
+            "type": "object",
+            "required": ["title", "thumbnail", "policy", "author", "price"],
+            "properties": {
+              "title": { "type": "string" },
+              "thumbnail": { "type": "string" },
+              "policy": { "type": "string" },
+              "author": { "type": "string" },
+              "price": { "type": "number" }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "controller": "ChapterController",
+      "basePath": "/chapters",
+      "routes": [
+        {
+          "method": "GET",
+          "url": "/chapters/:id/content",
+          "summary": "Get chapter content",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string" } }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/chapters/:slugBook/:slugChapter",
+          "summary": "Get chapter detail",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["slugBook", "slugChapter"],
+            "properties": {
+              "slugBook": { "type": "string" },
+              "slugChapter": { "type": "string" }
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "url": "/chapters/:bookSlug",
+          "summary": "Create chapter (Publisher only)",
+          "auth": { "bearer": true, "roles": ["PUBLISHER"] },
+          "guards": ["JwtAuthGuard", "RoleGuard"],
+          "paramsSchema": {
+            "type": "object",
+            "required": ["bookSlug"],
+            "properties": { "bookSlug": { "type": "string" } }
+          },
+          "bodySchema": {
+            "type": "object",
+            "required": [
+              "title",
+              "chapterNumber",
+              "isFree",
+              "price",
+              "isOnSale",
+              "salePercent"
+            ],
+            "properties": {
+              "title": { "type": "string" },
+              "chapterNumber": { "type": "number" },
+              "isFree": { "type": "boolean" },
+              "price": { "type": "number" },
+              "isOnSale": { "type": "boolean" },
+              "salePercent": { "type": "number" }
+            }
+          },
+          "multipart": {
+            "field": "content",
+            "type": "array",
+            "maxSizeMB": 5,
+            "types": ["jpg", "jpeg", "png", "webp"]
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/chapters/:bookSlug/:chapterSlug",
+          "summary": "Update chapter (Publisher only)",
+          "auth": { "bearer": true, "roles": ["PUBLISHER"] },
+          "guards": ["JwtAuthGuard", "RoleGuard"],
+          "paramsSchema": {
+            "type": "object",
+            "required": ["bookSlug", "chapterSlug"],
+            "properties": {
+              "bookSlug": { "type": "string" },
+              "chapterSlug": { "type": "string" }
+            }
+          },
+          "bodySchema": {
+            "type": "object",
+            "properties": {
+              "isFree": { "type": "boolean" },
+              "price": { "type": "number" },
+              "isOnSale": { "type": "boolean" },
+              "salePercent": { "type": "number" }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "controller": "CategoryController",
+      "basePath": "/category",
+      "routes": [
+        {
+          "method": "GET",
+          "url": "/category",
+          "summary": "Get all categories"
+        },
+        {
+          "method": "GET",
+          "url": "/category/feature",
+          "summary": "Get featured categories"
+        },
+        {
+          "method": "GET",
+          "url": "/category/slug/:slug",
+          "summary": "Get category with books by slug",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["slug"],
+            "properties": { "slug": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    {
+      "controller": "CartController",
+      "basePath": "/cart",
+      "auth": { "bearer": true },
+      "routes": [
+        { "method": "GET", "url": "/cart", "summary": "Get cart items" },
+        {
+          "method": "POST",
+          "url": "/cart/items",
+          "summary": "Add item to cart",
+          "bodySchema": {
+            "type": "object",
+            "required": ["bookId"],
+            "properties": { "bookId": { "type": "string", "format": "uuid" } }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/cart/items/:id",
+          "summary": "Update cart item",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string", "format": "uuid" } }
+          },
+          "bodySchema": {
+            "type": "object",
+            "required": ["price"],
+            "properties": { "price": { "type": "number", "minimum": 0 } }
+          }
+        },
+        {
+          "method": "DELETE",
+          "url": "/cart/items/:id",
+          "summary": "Remove item from cart",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string", "format": "uuid" } }
+          }
+        },
+        {
+          "method": "DELETE",
+          "url": "/cart/clear",
+          "summary": "Clear entire cart"
+        },
+        {
+          "method": "POST",
+          "url": "/cart/checkout",
+          "summary": "Checkout from cart",
+          "bodySchema": {
+            "type": "object",
+            "required": ["payingMethod"],
+            "properties": {
+              "payingMethod": {
+                "type": "string",
+                "enum": ["BANKING", "MOMO", "VNPAY"]
+              },
+              "cartItemIds": {
+                "type": "array",
+                "items": { "type": "string", "format": "uuid" }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "controller": "FavoriteController",
+      "basePath": "/favorite",
+      "auth": { "bearer": true },
+      "routes": [
+        {
+          "method": "POST",
+          "url": "/favorite/:bookID",
+          "summary": "Add book to favorites",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["bookID"],
+            "properties": { "bookID": { "type": "string" } }
+          }
+        },
+        {
+          "method": "DELETE",
+          "url": "/favorite/:bookID",
+          "summary": "Remove book from favorites",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["bookID"],
+            "properties": { "bookID": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    {
+      "controller": "OrderController",
+      "basePath": "/api/orders",
+      "auth": { "bearer": true },
+      "routes": [
+        {
+          "method": "POST",
+          "url": "/api/orders",
+          "summary": "Create order",
+          "bodySchema": {
+            "type": "object",
+            "required": ["orderItems", "payingMethod"],
+            "properties": {
+              "orderItems": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["defaultPrice"],
+                  "properties": {
+                    "bookId": { "type": "string", "format": "uuid" },
+                    "chapterId": { "type": "string", "format": "uuid" },
+                    "defaultPrice": { "type": "number", "minimum": 0 },
+                    "discountPrice": {
+                      "type": "number",
+                      "minimum": 0,
+                      "default": 0
+                    }
+                  }
+                }
+              },
+              "payingMethod": {
+                "type": "string",
+                "enum": ["BANK_TRANSFER", "CREDIT_CARD", "E_WALLET"]
+              }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/api/orders",
+          "summary": "Get user orders",
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "status": {
+                "type": "string",
+                "enum": [
+                  "PENDING",
+                  "COMPLETED",
+                  "CANCELLED",
+                  "REFUNDED",
+                  "FAILED"
+                ]
+              },
+              "payingMethod": {
+                "type": "string",
+                "enum": ["BANK_TRANSFER", "CREDIT_CARD", "E_WALLET"]
+              },
+              "page": { "type": "number", "minimum": 1, "default": 1 },
+              "limit": { "type": "number", "minimum": 1, "default": 10 },
+              "sortBy": {
+                "type": "string",
+                "enum": ["createdAt", "totalAmount"],
+                "default": "createdAt"
+              },
+              "sortOrder": {
+                "type": "string",
+                "enum": ["asc", "desc"],
+                "default": "desc"
+              }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/api/orders/:id",
+          "summary": "Get order detail",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string", "format": "uuid" } }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/api/orders/:id/cancel",
+          "summary": "Cancel order",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string", "format": "uuid" } }
+          },
+          "bodySchema": {
+            "type": "object",
+            "properties": { "reason": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    {
+      "controller": "PublisherController",
+      "basePath": "/publisher",
+      "routes": [
+        {
+          "method": "GET",
+          "url": "/publisher",
+          "summary": "Get all publishers"
+        },
+        {
+          "method": "POST",
+          "url": "/publisher",
+          "summary": "Register as publisher",
+          "auth": { "bearer": true }
+        },
+        {
+          "method": "GET",
+          "url": "/publisher/:id",
+          "summary": "Get publisher profile",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string" } }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/publisher/:id/books",
+          "summary": "Get publisher books",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string" } }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/publisher/dashboard",
+          "summary": "Get publisher dashboard overview",
+          "auth": { "bearer": true, "roles": ["PUBLISHER"] }
+        },
+        {
+          "method": "DELETE",
+          "url": "/publisher/chapters/:id",
+          "summary": "Delete chapter",
+          "auth": { "bearer": true, "roles": ["PUBLISHER"] },
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string" } }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/publisher/revenue",
+          "summary": "Get revenue statistics",
+          "auth": { "bearer": true, "roles": ["PUBLISHER"] },
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "startDate": { "type": "string", "format": "date-time" },
+              "endDate": { "type": "string", "format": "date-time" },
+              "groupBy": {
+                "type": "string",
+                "enum": ["daily", "weekly", "monthly", "yearly"],
+                "default": "monthly"
+              }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/publisher/orders",
+          "summary": "Get publisher orders",
+          "auth": { "bearer": true, "roles": ["PUBLISHER"] },
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "number", "minimum": 1, "default": 1 },
+              "limit": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 20
+              },
+              "status": {
+                "type": "string",
+                "enum": ["PAID", "PENDING", "CANCELLED", "REFUNDED", "ERROR"]
+              },
+              "startDate": { "type": "string", "format": "date-time" },
+              "endDate": { "type": "string", "format": "date-time" },
+              "bookId": { "type": "string" }
+            }
+          }
+        },
+        {
+          "method": "POST",
+          "url": "/publisher/bank-info",
+          "summary": "Create bank information",
+          "auth": { "bearer": true, "roles": ["PUBLISHER"] },
+          "bodySchema": {
+            "type": "object",
+            "required": ["bankName", "accountNumber", "accountHolderName"],
+            "properties": {
+              "bankName": { "type": "string" },
+              "accountNumber": { "type": "string" },
+              "accountHolderName": { "type": "string" },
+              "branchName": { "type": "string" },
+              "swiftCode": { "type": "string" },
+              "isPrimary": { "type": "boolean", "default": false }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/publisher/bank-info",
+          "summary": "Get bank information list",
+          "auth": { "bearer": true, "roles": ["PUBLISHER"] }
+        },
+        {
+          "method": "PUT",
+          "url": "/publisher/bank-info/:id",
+          "summary": "Update bank information",
+          "auth": { "bearer": true, "roles": ["PUBLISHER"] },
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string" } }
+          },
+          "bodySchema": {
+            "type": "object",
+            "properties": {
+              "bankName": { "type": "string" },
+              "accountNumber": { "type": "string" },
+              "accountHolderName": { "type": "string" },
+              "branchName": { "type": "string" },
+              "swiftCode": { "type": "string" },
+              "isPrimary": { "type": "boolean" }
+            }
+          }
+        },
+        {
+          "method": "DELETE",
+          "url": "/publisher/bank-info/:id",
+          "summary": "Delete bank information",
+          "auth": { "bearer": true, "roles": ["PUBLISHER"] },
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string" } }
+          }
+        },
+        {
+          "method": "PATCH",
+          "url": "/publisher/bank-info/:id/set-primary",
+          "summary": "Set primary bank information",
+          "auth": { "bearer": true, "roles": ["PUBLISHER"] },
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string" } }
+          }
+        }
+      ]
+    },
+    {
+      "controller": "NotificationController",
+      "basePath": "/notifications",
+      "auth": { "bearer": true },
+      "routes": [
+        {
+          "method": "GET",
+          "url": "/notifications",
+          "summary": "Get notifications",
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "number", "minimum": 1, "default": 1 },
+              "limit": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 10
+              },
+              "isRead": { "type": "boolean" },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "ORDER_SUCCESS",
+                  "PAYMENT_FAILED",
+                  "NEW_CHAPTER",
+                  "BOOK_PUBLISHED",
+                  "BOOK_UPDATED",
+                  "COMMENT_TAGGED",
+                  "BOOK_LIKED",
+                  "BOOK_RATED",
+                  "ACCOUNT_VERIFIED",
+                  "PASSWORD_CHANGED",
+                  "PROFILE_UPDATED",
+                  "PROMOTION",
+                  "SYSTEM"
+                ]
+              },
+              "sortBy": { "type": "string", "default": "createdAt" },
+              "sortOrder": {
+                "type": "string",
+                "enum": ["asc", "desc"],
+                "default": "desc"
+              }
+            }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/notifications/:id/read",
+          "summary": "Mark notification as read",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string", "format": "uuid" } }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/notifications/read-all",
+          "summary": "Mark all notifications as read"
+        },
+        {
+          "method": "DELETE",
+          "url": "/notifications/:id",
+          "summary": "Delete notification",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string", "format": "uuid" } }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/notifications/unread-count",
+          "summary": "Get unread count"
+        },
+        {
+          "method": "GET",
+          "url": "/notifications/settings",
+          "summary": "Get notification settings"
+        },
+        {
+          "method": "PUT",
+          "url": "/notifications/settings",
+          "summary": "Update notification settings",
+          "bodySchema": {
+            "type": "object",
+            "properties": {
+              "enableEmail": { "type": "boolean" },
+              "enableSms": { "type": "boolean" },
+              "enablePush": { "type": "boolean" },
+              "enableOrderNotification": { "type": "boolean" },
+              "enablePaymentNotification": { "type": "boolean" },
+              "enablePromotionNotification": { "type": "boolean" },
+              "enableNewChapterNotification": { "type": "boolean" }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "controller": "SubscriptionController",
+      "basePath": "/api/subscriptions",
+      "routes": [
+        {
+          "method": "GET",
+          "url": "/api/subscriptions/plans",
+          "summary": "Get subscription plans"
+        },
+        {
+          "method": "POST",
+          "url": "/api/subscriptions/subscribe",
+          "summary": "Subscribe to plan",
+          "auth": { "bearer": true },
+          "bodySchema": {
+            "type": "object",
+            "required": ["subscriptionId"],
+            "properties": {
+              "subscriptionId": { "type": "string" },
+              "paymentMethod": { "type": "string" },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/api/subscriptions/current",
+          "summary": "Get current subscription",
+          "auth": { "bearer": true }
+        },
+        {
+          "method": "PUT",
+          "url": "/api/subscriptions/cancel",
+          "summary": "Cancel subscription",
+          "auth": { "bearer": true },
+          "bodySchema": {
+            "type": "object",
+            "properties": {
+              "reason": { "type": "string" },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/api/subscriptions/renew",
+          "summary": "Renew subscription",
+          "auth": { "bearer": true },
+          "bodySchema": {
+            "type": "object",
+            "properties": {
+              "notes": { "type": "string" },
+              "paymentMethod": { "type": "string" }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/api/subscriptions/history",
+          "summary": "Get subscription history",
+          "auth": { "bearer": true },
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "number", "minimum": 1, "default": 1 },
+              "limit": { "type": "number", "minimum": 1, "default": 10 },
+              "planType": {
+                "type": "string",
+                "enum": ["BASIC", "PREMIUM", "VIP"]
+              },
+              "status": { "type": "string" }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "controller": "AdminController",
+      "basePath": "/admin",
+      "routes": [
+        {
+          "method": "GET",
+          "url": "/admin/category",
+          "summary": "Get all categories"
+        },
+        {
+          "method": "POST",
+          "url": "/admin/category",
+          "summary": "Create new category",
+          "bodySchema": {
+            "type": "object",
+            "required": ["title"],
+            "properties": {
+              "title": { "type": "string" },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/admin/category/:slug",
+          "summary": "Get category by slug",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["slug"],
+            "properties": { "slug": { "type": "string" } }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/admin/category/:slug",
+          "summary": "Update category",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["slug"],
+            "properties": { "slug": { "type": "string" } }
+          },
+          "bodySchema": {
+            "type": "object",
+            "properties": { "description": { "type": "string" } }
+          }
+        },
+        {
+          "method": "DELETE",
+          "url": "/admin/category/:slug",
+          "summary": "Delete category",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["slug"],
+            "properties": { "slug": { "type": "string" } }
+          }
+        },
+        {
+          "method": "PATCH",
+          "url": "/admin/category/:slug",
+          "summary": "Activate category",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["slug"],
+            "properties": { "slug": { "type": "string" } }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/admin/user",
+          "summary": "Get all users (Admin)"
+        },
+        {
+          "method": "GET",
+          "url": "/admin/user/:id",
+          "summary": "Get user by ID (Admin)",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string" } }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/admin/user/:id",
+          "summary": "Update user (Admin)",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string" } }
+          },
+          "bodySchema": {
+            "type": "object",
+            "required": ["username"],
+            "properties": { "username": { "type": "string" } }
+          },
+          "multipart": {
+            "field": "avatar",
+            "maxSizeMB": 5,
+            "types": ["jpg", "jpeg", "png", "webp"]
+          }
+        },
+        {
+          "method": "DELETE",
+          "url": "/admin/user/:id",
+          "summary": "Delete user (Admin)",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string" } }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/admin/books",
+          "summary": "Get all books (Admin)",
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "string", "format": "numberString" },
+              "limit": { "type": "string", "format": "numberString" }
+            }
+          }
+        },
+        {
+          "method": "DELETE",
+          "url": "/admin/books/:slug",
+          "summary": "Delete book",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["slug"],
+            "properties": { "slug": { "type": "string" } }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/admin/books/:id/approve",
+          "summary": "Approve book submission",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string", "format": "uuid" } }
+          },
+          "bodySchema": {
+            "type": "object",
+            "properties": { "notes": { "type": "string" } }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/admin/books/:id/reject",
+          "summary": "Reject book submission",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string", "format": "uuid" } }
+          },
+          "bodySchema": {
+            "type": "object",
+            "required": ["reason"],
+            "properties": {
+              "reason": { "type": "string" },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/admin/publishers",
+          "summary": "Get all publishers (Admin)",
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "page": { "type": "number", "minimum": 1, "default": 1 },
+              "limit": {
+                "type": "number",
+                "minimum": 1,
+                "maximum": 100,
+                "default": 10
+              },
+              "search": { "type": "string" },
+              "status": {
+                "type": "string",
+                "enum": ["ACTIVE", "SUSPENDED", "INACTIVE"]
+              }
+            }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/admin/publishers/:id/approve",
+          "summary": "Approve publisher submission",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string", "format": "uuid" } }
+          },
+          "bodySchema": {
+            "type": "object",
+            "properties": { "notes": { "type": "string" } }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/admin/publishers/:id/reject",
+          "summary": "Reject publisher submission",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string", "format": "uuid" } }
+          },
+          "bodySchema": {
+            "type": "object",
+            "required": ["reason"],
+            "properties": {
+              "reason": { "type": "string" },
+              "notes": { "type": "string" }
+            }
+          }
+        },
+        {
+          "method": "PUT",
+          "url": "/admin/publishers/:id/suspend",
+          "summary": "Suspend publisher",
+          "paramsSchema": {
+            "type": "object",
+            "required": ["id"],
+            "properties": { "id": { "type": "string", "format": "uuid" } }
+          },
+          "bodySchema": {
+            "type": "object",
+            "required": ["reason"],
+            "properties": {
+              "reason": { "type": "string" },
+              "notes": { "type": "string" },
+              "suspendDays": { "type": "number", "minimum": 1 }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/admin/statistics/overview",
+          "summary": "Get overview statistics",
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "period": {
+                "type": "string",
+                "enum": ["today", "week", "month", "year"],
+                "default": "month"
+              }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/admin/statistics/revenue",
+          "summary": "Get revenue statistics",
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "year": { "type": "number" },
+              "month": { "type": "number", "minimum": 1, "maximum": 12 },
+              "period": {
+                "type": "string",
+                "enum": ["daily", "monthly", "yearly"],
+                "default": "monthly"
+              },
+              "groupBy": {
+                "type": "string",
+                "enum": ["day", "month", "year"],
+                "default": "month"
+              }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/admin/statistics/users",
+          "summary": "Get user statistics",
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "year": { "type": "number" },
+              "period": {
+                "type": "string",
+                "enum": ["daily", "monthly", "yearly"],
+                "default": "monthly"
+              },
+              "role": {
+                "type": "string",
+                "enum": ["USER", "ADMIN", "PUBLISHER", "MODERATOR"]
+              },
+              "status": {
+                "type": "string",
+                "enum": ["ACTIVE", "SUSPENDED", "INACTIVE"]
+              }
+            }
+          }
+        },
+        {
+          "method": "GET",
+          "url": "/admin/statistics/books",
+          "summary": "Get book statistics",
+          "querySchema": {
+            "type": "object",
+            "properties": {
+              "year": { "type": "number" },
+              "period": {
+                "type": "string",
+                "enum": ["daily", "monthly", "yearly"],
+                "default": "monthly"
+              },
+              "categoryId": { "type": "string" },
+              "status": {
+                "type": "string",
+                "enum": ["PUBLISHED", "PENDING", "REJECTED"]
+              },
+              "publisherId": { "type": "string" }
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "entities": {
+    "enums": {
+      "Role": ["USER", "ADMIN", "PUBLISHER", "MODERATOR"],
+      "AccountStatus": ["NOT_VERIFY", "VERIFIED", "BANNED"],
+      "PayingMethod": ["BANKING", "MOMO", "VNPAY"],
+      "NotificationType": [
+        "ORDER_SUCCESS",
+        "PAYMENT_FAILED",
+        "NEW_CHAPTER",
+        "BOOK_PUBLISHED",
+        "BOOK_UPDATED",
+        "COMMENT_TAGGED",
+        "BOOK_LIKED",
+        "BOOK_RATED",
+        "ACCOUNT_VERIFIED",
+        "PASSWORD_CHANGED",
+        "PROFILE_UPDATED",
+        "BOOK_APPROVED",
+        "BOOK_REJECT",
+        "REVENUE_REPORT",
+        "ADMIN_ANNOUNCEMENT",
+        "MAINTENANCE",
+        "PROMOTION"
+      ],
+      "OrderStatus": ["PAID", "PENDING", "CANCELLED", "REFUNDED", "ERROR"],
+      "SubscriptionPlan": ["ONE_MONTH", "THREE_MONTHS"],
+      "SubscriptionStatus": ["ACTIVE", "EXPIRED", "CANCELLED"],
+      "BookStatus": ["PENDING", "DRAFT", "PUBLISHED", "REJECTED", "ARCHIVED"],
+      "ChapterStatus": ["PENDING", "DRAFT", "PUBLISHED", "ARCHIVED"]
+    },
+    "models": {
+      "User": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "role": { "type": "Role", "default": "USER" },
+        "username": { "type": "string", "maxLength": 200, "required": true },
+        "password": { "type": "string", "length": 60, "required": true },
+        "email": { "type": "string", "maxLength": 254, "required": true },
+        "avatar": { "type": "string", "nullable": true, "maxLength": 255 },
+        "accountStatus": { "type": "AccountStatus", "default": "NOT_VERIFY" },
+        "activeDevices": { "type": "number", "default": 0 },
+        "updatedAt": { "type": "Date" },
+        "createdAt": { "type": "Date" },
+        "deletedAt": { "type": "Date", "nullable": true },
+        "googleID": { "type": "string", "nullable": true, "unique": true },
+        "facebookID": { "type": "string", "nullable": true, "unique": true },
+        "provider": { "type": "string", "nullable": true }
+      },
+      "Book": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "publisherId": { "type": "string", "required": true },
+        "title": { "type": "string", "maxLength": 200, "required": true },
+        "slug": {
+          "type": "string",
+          "maxLength": 200,
+          "unique": true,
+          "required": true
+        },
+        "thumbnail": { "type": "string", "nullable": true, "maxLength": 200 },
+        "view": { "type": "number", "default": 0 },
+        "likeCount": { "type": "number", "default": 0 },
+        "description": { "type": "string", "default": "" },
+        "author": { "type": "string", "default": "" },
+        "policy": { "type": "string", "default": "" },
+        "isFree": { "type": "boolean", "default": false },
+        "status": { "type": "BookStatus", "default": "DRAFT" },
+        "price": { "type": "number", "default": 0 },
+        "isOnSale": { "type": "boolean", "default": false },
+        "salePercent": { "type": "number", "default": 0 },
+        "updatedAt": { "type": "Date" },
+        "createdAt": { "type": "Date" },
+        "deletedAt": { "type": "Date", "nullable": true }
+      },
+      "Chapter": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "bookId": { "type": "string", "required": true },
+        "title": { "type": "string", "maxLength": 255, "required": true },
+        "slug": { "type": "string", "maxLength": 255, "required": true },
+        "chapterNumber": { "type": "number", "required": true },
+        "views": { "type": "number", "default": 0 },
+        "status": { "type": "ChapterStatus", "default": "DRAFT" },
+        "price": { "type": "number", "default": 0 },
+        "isFree": { "type": "boolean", "default": false },
+        "isOnSale": { "type": "boolean", "default": false },
+        "salePercent": { "type": "number", "default": 0 },
+        "publishedAt": { "type": "Date", "nullable": true },
+        "createdAt": { "type": "Date" },
+        "updatedAt": { "type": "Date" },
+        "deletedAt": { "type": "Date", "nullable": true },
+        "content": { "type": "string", "nullable": true }
+      },
+      "CartItem": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "userId": { "type": "string", "required": true },
+        "bookId": { "type": "string", "nullable": true },
+        "chapterId": { "type": "string", "nullable": true },
+        "price": { "type": "number", "default": 0 },
+        "createdAt": { "type": "Date" }
+      },
+      "Orders": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "userId": { "type": "string", "required": true },
+        "totalAmount": { "type": "number", "default": 0 },
+        "status": { "type": "OrderStatus", "default": "PENDING" },
+        "payingMethod": { "type": "PayingMethod", "required": true },
+        "paidAt": { "type": "Date", "nullable": true },
+        "createdAt": { "type": "Date" },
+        "updatedAt": { "type": "Date" }
+      },
+      "OrderItem": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "ordersId": { "type": "string", "required": true },
+        "bookId": { "type": "string", "nullable": true },
+        "chapterId": { "type": "string", "nullable": true },
+        "defaultPrice": { "type": "number", "required": true },
+        "discountPrice": { "type": "number", "default": 0 },
+        "isRead": { "type": "boolean", "default": false },
+        "createdAt": { "type": "Date" }
+      },
+      "Review": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "orderItemID": {
+          "type": "string",
+          "uuid": true,
+          "unique": true,
+          "required": true
+        },
+        "ratePoint": { "type": "number", "required": true },
+        "content": { "type": "string", "required": true },
+        "agreement": { "type": "number", "required": true },
+        "createdAt": { "type": "Date" },
+        "updatedAt": { "type": "Date" },
+        "deletedAt": { "type": "Date", "nullable": true },
+        "bookId": { "type": "string", "nullable": true }
+      },
+      "Comment": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "userId": { "type": "string", "required": true },
+        "bookId": { "type": "string", "nullable": true },
+        "content": { "type": "string", "required": true },
+        "createdAt": { "type": "Date" },
+        "updatedAt": { "type": "Date" },
+        "deletedAt": { "type": "Date", "nullable": true }
+      },
+      "Category": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "title": { "type": "string", "maxLength": 50, "required": true },
+        "slug": {
+          "type": "string",
+          "maxLength": 75,
+          "unique": true,
+          "required": true
+        },
+        "thumbnail": { "type": "string", "nullable": true, "maxLength": 200 },
+        "description": { "type": "string", "nullable": true },
+        "createdAt": { "type": "Date" },
+        "updatedAt": { "type": "Date" },
+        "deletedAt": { "type": "Date", "nullable": true }
+      },
+      "UserSubscription": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "userId": { "type": "string", "unique": true, "required": true },
+        "subscriptionID": { "type": "string", "required": true },
+        "startDate": { "type": "Date", "required": true },
+        "endDate": { "type": "Date", "required": true },
+        "status": { "type": "SubscriptionStatus", "default": "ACTIVE" },
+        "createdAt": { "type": "Date" },
+        "updatedAt": { "type": "Date", "nullable": true }
+      },
+      "Subscription": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "duration": { "type": "number", "required": true },
+        "planType": { "type": "SubscriptionPlan", "default": "ONE_MONTH" },
+        "createdAt": { "type": "Date" },
+        "updatedAt": { "type": "Date", "nullable": true },
+        "deletedAt": { "type": "Date", "nullable": true }
+      },
+      "BookCategory": {
+        "bookId": { "type": "string", "required": true },
+        "categoryId": { "type": "string", "required": true },
+        "_id": { "composite": ["bookId", "categoryId"] }
+      },
+      "Favorite": {
+        "userID": { "type": "string", "required": true },
+        "bookID": { "type": "string", "required": true },
+        "createdAt": { "type": "Date" },
+        "updatedAt": { "type": "Date" },
+        "_id": { "composite": ["bookID", "userID"] }
+      },
+      "BankInfo": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "userID": { "type": "string", "unique": true, "required": true },
+        "bankName": { "type": "string", "maxLength": 100, "required": true },
+        "accountNumber": {
+          "type": "string",
+          "maxLength": 50,
+          "required": true
+        },
+        "accountHolderName": {
+          "type": "string",
+          "maxLength": 100,
+          "required": true
+        },
+        "branchName": { "type": "string", "nullable": true, "maxLength": 200 },
+        "swiftCode": { "type": "string", "nullable": true, "maxLength": 20 },
+        "isVerified": { "type": "boolean", "default": false },
+        "isPrimary": { "type": "boolean", "default": false },
+        "createdAt": { "type": "Date" },
+        "updatedAt": { "type": "Date" },
+        "deletedAt": { "type": "Date", "nullable": true },
+        "_unique": [["bankName", "accountNumber"]]
+      },
+      "Notification": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "userId": { "type": "string", "required": true },
+        "title": { "type": "string", "maxLength": 255, "required": true },
+        "body": { "type": "string", "required": true },
+        "type": { "type": "string", "maxLength": 50, "required": true },
+        "relatedItemId": { "type": "string", "nullable": true },
+        "relatedItemType": { "type": "string", "nullable": true },
+        "isRead": { "type": "boolean", "default": false },
+        "firebaseMessageId": {
+          "type": "string",
+          "nullable": true,
+          "maxLength": 255
+        },
+        "createdAt": { "type": "Date" },
+        "updatedAt": { "type": "Date" },
+        "deletedAt": { "type": "Date", "nullable": true }
+      },
+      "UserNotificationSettings": {
+        "id": { "type": "string", "uuid": true, "required": true },
+        "userId": { "type": "string", "unique": true, "required": true },
+        "notificationId": {
+          "type": "string",
+          "unique": true,
+          "nullable": true
+        },
+        "enableEmail": { "type": "boolean", "default": true },
+        "enableSms": { "type": "boolean", "default": false },
+        "enablePush": { "type": "boolean", "default": true },
+        "enableOrderNotification": { "type": "boolean", "default": true },
+        "enablePaymentNotification": { "type": "boolean", "default": true },
+        "enablePromotionNotification": { "type": "boolean", "default": true },
+        "enableNewChapterNotification": { "type": "boolean", "default": true },
+        "createdAt": { "type": "Date" },
+        "updatedAt": { "type": "Date" }
+      }
+    }
+  }
+}

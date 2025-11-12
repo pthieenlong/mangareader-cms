@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 import type { CustomResponse } from "@/lib/custom";
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = import.meta.env.VITE_API_URL;
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,

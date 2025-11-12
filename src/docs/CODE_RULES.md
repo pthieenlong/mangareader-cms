@@ -113,7 +113,7 @@ src/
 * Each component should be function component.
 * Do not use any type.
 * Each component should do one job.
-* Do not write logic functional direct into JSX (split into variables or functions first)
+* Do not write logic functional and mock data direct into JSX (split into variables or functions first)
 * Components should be **small and reusable**.
 * UI-only reusable components go to `./src/components`.
 * Feature-specific UI goes inside its corresponding feature folder.

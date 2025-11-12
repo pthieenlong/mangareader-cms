@@ -1,15 +1,22 @@
+import { Card, Typography, Empty } from "antd";
+import "./content.scss";
+
+const { Title, Text } = Typography;
+
 export default function ContentPage() {
   return (
-    <div className="grid gap-2">
-      <h1 className="text-2xl font-semibold tracking-tight">Quản lý nội dung</h1>
-      <p className="text-sm text-muted-foreground">
-        Quản lý bài viết, trang, media và thẻ.
-      </p>
-      <div className="rounded-lg border bg-card p-4 text-sm text-muted-foreground">
-        Nội dung sẽ được bổ sung sau.
+    <div className="content-container">
+      <div className="content-header">
+        <Title level={2} style={{ margin: 0 }}>
+          Quản lý nội dung
+        </Title>
+        <Text type="secondary">
+          Quản lý bài viết, trang, media và thẻ.
+        </Text>
       </div>
+      <Card>
+        <Empty description="Nội dung sẽ được bổ sung sau." />
+      </Card>
     </div>
   );
 }
-
-

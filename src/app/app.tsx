@@ -1,189 +1,226 @@
-import { Link, Outlet, useLocation } from "@tanstack/react-router";
-import { Bell, ChevronDown, LayoutDashboard, BookOpen, Users, ShoppingCart, FileText, Settings, FolderTree } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Input from "@/components/ui/input";
+import { Outlet, useLocation, useRouter } from "@tanstack/react-router";
+import {
+  BellOutlined,
+  DownOutlined,
+  DashboardOutlined,
+  BookOutlined,
+  UserOutlined,
+  ShoppingCartOutlined,
+  FileTextOutlined,
+  SettingOutlined,
+  AppstoreOutlined,
+} from "@ant-design/icons";
+import { Layout, Menu, Input, Button, Breadcrumb, Space, Avatar, Dropdown } from "antd";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
+import "./app.scss";
 
-type SectionProps = {
-  children: ReactNode;
-  className?: string;
+const { Header, Sider, Content, Footer } = Layout;
+const { Search } = Input;
+
+type MenuItem = {
+  key: string;
+  label: string;
+  icon?: ReactNode;
+  children?: MenuItem[];
 };
-
-function Section({ children, className }: SectionProps) {
-  return <div className={className}>{children}</div>;
-}
 
 export default function AppLayout() {
   const currentYear = new Date().getFullYear();
-  const menuLinks = [
-    { to: "/dashboard", label: "Trang chủ", icon: LayoutDashboard },
-    {
-      to: "/book",
-      label: "Danh sách truyện",
-      icon: BookOpen,
-      children: [
-        { to: "/book", label: "Tất cả truyện", icon: FolderTree },
-        { to: "/book/categories", label: "Danh mục truyện", icon: FolderTree },
-      ],
-    },
-    { to: "/user", label: "Quản lý người dùng", icon: Users },
-    { to: "/ecommerce", label: "Quản lý đơn hàng", icon: ShoppingCart },
-    { to: "/content", label: "Quản lý nội dung", icon: FileText },
-    { to: "/notifications", label: "Thông báo", icon: Bell },
-    { to: "/settings", label: "Cài đặt", icon: Settings },
-  ];
   const location = useLocation();
+  const router = useRouter();
+
+  const menuItems: MenuItem[] = [
+    {
+      key: "/dashboard",
+      label: "Trang chủ",
+      icon: <DashboardOutlined />,
+    },
+    {
+      key: "/book",
+      label: "Quản lý truyện",
+      icon: <BookOutlined />,
+    },
+    {
+      key: "/categories",
+      label: "Quản lý danh mục",
+      icon: <AppstoreOutlined />,
+    },
+    {
+      key: "/user",
+      label: "Quản lý người dùng",
+      icon: <UserOutlined />,
+    },
+    {
+      key: "/ecommerce",
+      label: "Quản lý đơn hàng",
+      icon: <ShoppingCartOutlined />,
+    },
+    {
+      key: "/content",
+      label: "Quản lý nội dung",
+      icon: <FileTextOutlined />,
+    },
+    {
+      key: "/notifications",
+      label: "Thông báo",
+      icon: <BellOutlined />,
+    },
+    {
+      key: "/settings",
+      label: "Cài đặt",
+      icon: <SettingOutlined />,
+    },
+  ];
+
   const breadcrumbs = useMemo(() => {
     const path = location.pathname || "/";
     const segments = path.split("/").filter(Boolean);
     const labelMap: Record<string, string> = {
       dashboard: "Dashboard",
-      book: "Danh sách truyện",
-      categories: "Danh mục",
+      book: "Quản lý truyện",
+      categories: "Quản lý danh mục",
       user: "Quản lý người dùng",
       ecommerce: "Quản lý đơn hàng",
       content: "Quản lý nội dung",
       notifications: "Thông báo",
       settings: "Cài đặt",
     };
-    const crumbs: Array<{ to: string; label: string }> = [];
+    const crumbs: Array<{ href: string; title: string }> = [];
     let acc = "";
     for (const seg of segments) {
       acc += `/${seg}`;
-      crumbs.push({ to: acc, label: labelMap[seg] ?? seg });
+      crumbs.push({ href: acc, title: labelMap[seg] ?? seg });
     }
     if (crumbs.length === 0) {
-      return [{ to: "/dashboard", label: "Dashboard" }];
+      return [{ href: "/dashboard", title: "Dashboard" }];
     }
     return crumbs;
   }, [location.pathname]);
 
+  const selectedKeys = useMemo(() => {
+    const path = location.pathname;
+    return [path];
+  }, [location.pathname]);
+
+  const accountMenuItems = [
+    {
+      key: "profile",
+      label: "Thông tin tài khoản",
+    },
+    {
+      key: "settings",
+      label: "Cài đặt",
+    },
+    {
+      type: "divider" as const,
+    },
+    {
+      key: "logout",
+      label: "Đăng xuất",
+      danger: true,
+    },
+  ];
+
   return (
-    <div className="min-h-screen grid grid-cols-[260px_1fr] grid-rows-[auto_1fr_auto] bg-background text-foreground">
-      {/* Sidebar */}
-      <aside className="row-span-3 border-r bg-sidebar text-sidebar-foreground">
-        {/* Sidebar Header */}
-        <Section className="h-14 flex items-center px-4 border-b">
-          <span className="font-semibold tracking-tight">MangaReader CMS</span>
-        </Section>
-
-        {/* Sidebar Menu */}
-        <Section className="p-2">
-          <nav className="flex flex-col gap-1">
-            {menuLinks.map((item) => {
-              const Icon = item.icon;
-              const hasChildren = Array.isArray(item.children) && item.children.length > 0;
-              return (
-                <div key={item.to} className="flex flex-col">
-                  <Link
-                    to={item.to}
-                    className="px-3 py-2 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors flex items-center gap-2"
-                    activeProps={{
-                      className:
-                        "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
-                    }}
-                  >
-                    {Icon ? <Icon size={16} /> : null}
-                    <span>{item.label}</span>
-                  </Link>
-                  {hasChildren ? (
-                    <div className="ml-6 mt-1 flex flex-col gap-1">
-                      {item.children!.map((child) => {
-                        const CIcon = child.icon;
-                        return (
-                          <Link
-                            key={child.to}
-                            to={child.to}
-                            className="px-3 py-1.5 rounded-md hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors text-sm flex items-center gap-2"
-                            activeProps={{
-                              className:
-                                "bg-sidebar-accent text-sidebar-accent-foreground font-medium",
-                            }}
-                          >
-                            {CIcon ? <CIcon size={14} /> : null}
-                            <span>{child.label}</span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
-          </nav>
-        </Section>
-
-        {/* Sidebar Footer */}
-        <Section className="mt-auto p-4 border-t text-xs text-muted-foreground">
+    <Layout className="app-layout">
+      <Sider width={260} className="app-sidebar">
+        <div className="sidebar-header">
+          <span className="sidebar-title">MangaReader CMS</span>
+        </div>
+        <Menu
+          mode="inline"
+          selectedKeys={selectedKeys}
+          items={menuItems.map((item) => ({
+            key: item.key,
+            label: item.label,
+            icon: item.icon,
+            children: item.children?.map((child) => ({
+              key: child.key,
+              label: child.label,
+              icon: child.icon,
+            })),
+          }))}
+          onClick={({ key }) => {
+            const path = key as string;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            router.navigate({ to: path as any });
+          }}
+          className="sidebar-menu"
+        />
+        <div className="sidebar-footer">
           © {currentYear} MangaReader
-        </Section>
-      </aside>
-
-      {/* Header */}
-      <header className="col-start-2 h-14 border-b bg-card/50 backdrop-blur supports-backdrop-filter:bg-card/60 flex items-center justify-between px-4 gap-4">
-        {/* Searchbox */}
-        <div className="flex-1">
-          <div className="max-w-xl">
-            <Input placeholder="Search..." aria-label="Search" />
+        </div>
+      </Sider>
+      <Layout>
+        <Header className="app-header">
+          <div className="header-search">
+            <Search
+              placeholder="Search..."
+              allowClear
+              style={{ maxWidth: 500 }}
+            />
           </div>
-        </div>
-
-        {/* Account Tooltips */}
-        <div className="flex items-center gap-2">
-          {/* Notification button */}
-          <Button aria-label="Notifications" variant="outline" size="icon">
-            <Bell size={18} />
-          </Button>
-
-          {/* Account Menu */}
-          <Button aria-haspopup="menu" variant="outline" className="gap-2">
-            <span className="inline-flex size-6 items-center justify-center rounded-full bg-muted text-xs">
-              U
-            </span>
-            <span className="text-sm">Account</span>
-            <ChevronDown size={16} />
-          </Button>
-        </div>
-      </header>
-
-      {/* Body */}
-      <main className="col-start-2 p-4">
-        {/* Breadcrumbs */}
-        <Breadcrumb className="mb-3 text-sm text-muted-foreground">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/dashboard">Dashboard</BreadcrumbLink>
-            </BreadcrumbItem>
-            {breadcrumbs.map((b, idx) => (
-              <BreadcrumbItem key={b.to}>
-                <BreadcrumbSeparator />
-                {idx === breadcrumbs.length - 1 ? (
-                  <BreadcrumbPage>{b.label}</BreadcrumbPage>
-                ) : (
-                  <BreadcrumbLink href={b.to}>{b.label}</BreadcrumbLink>
-                )}
-              </BreadcrumbItem>
-            ))}
-          </BreadcrumbList>
-        </Breadcrumb>
-        <Outlet />
-      </main>
-
-      {/* Footer */}
-      <footer className="col-start-2 border-t h-12 flex items-center px-4 text-sm text-muted-foreground">
-        <span>Built by MangaReader with ❤️ in {currentYear} </span>
-      </footer>
-    </div>
+          <Space>
+            <Button
+              type="text"
+              icon={<BellOutlined />}
+              aria-label="Notifications"
+            />
+            <Dropdown menu={{ items: accountMenuItems }} trigger={["click"]}>
+              <Button type="text" className="account-button">
+                <Space>
+                  <Avatar size="small" className="account-avatar">
+                    U
+                  </Avatar>
+                  <span>Account</span>
+                  <DownOutlined />
+                </Space>
+              </Button>
+            </Dropdown>
+          </Space>
+        </Header>
+        <Content className="app-content">
+          <Breadcrumb
+            items={[
+              {
+                title: (
+                  <a
+                    onClick={() => {
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      router.navigate({ to: "/dashboard" as any });
+                    }}
+                    style={{ cursor: "pointer" }}
+                  >
+                    Dashboard
+                  </a>
+                ),
+              },
+              ...breadcrumbs.map((b, idx) => ({
+                title:
+                  idx === breadcrumbs.length - 1 ? (
+                    b.title
+                  ) : (
+                    <a
+                      onClick={() => {
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        router.navigate({ to: b.href as any });
+                      }}
+                      style={{ cursor: "pointer" }}
+                    >
+                      {b.title}
+                    </a>
+                  ),
+              })),
+            ]}
+            style={{ marginBottom: 16 }}
+          />
+          <Outlet />
+        </Content>
+        <Footer className="app-footer">
+          Built by MangaReader with ❤️ in {currentYear}
+        </Footer>
+      </Layout>
+    </Layout>
   );
 }
-
-

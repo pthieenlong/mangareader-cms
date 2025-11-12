@@ -19,5 +19,10 @@ export const bookService = {
     const response = await axiosInstance.delete<CustomResponse>(`/books/${id}`);
     return response.data;
   },
+
+  async getCategories(): Promise<CustomResponse> {
+    const response = await axiosInstance.get<CustomResponse>("/category");
+    return response.data;
+  },
 };
 

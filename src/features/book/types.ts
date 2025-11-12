@@ -1,4 +1,19 @@
-export type BookStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
+export type BookStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED" | "PENDING";
+
+export interface IBookCategory {
+  id: string;
+  title: string;
+}
+
+export interface IBookCategoryRelation {
+  category: IBookCategory;
+}
+
+export interface IPublisher {
+  id: string;
+  username: string;
+  avatar?: string | null;
+}
 
 export interface IBook {
   id: string;
@@ -19,6 +34,8 @@ export interface IBook {
   updatedAt: string;
   createdAt: string;
   deletedAt: string | null;
+  bookCategories?: IBookCategoryRelation[];
+  publisher?: IPublisher;
 }
 
 export interface IBookListParams {
@@ -27,6 +44,7 @@ export interface IBookListParams {
   keyword?: string;
   category?: string;
   categories?: string[];
+  status?: BookStatus;
   sort?: "latest" | "top_rated" | "most_viewed" | "price_asc" | "price_desc" | "free";
 }
 

@@ -1,31 +1,30 @@
 import { useState, useEffect, useCallback } from "react";
-import { Search, Edit, Trash2, Eye, Plus } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import Input from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { SearchOutlined, EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { Button, Input, Select, Table, Tag, Space, Typography, Card, Image, Avatar, Tooltip } from "antd";
+import type { ColumnsType } from "antd/es/table";
 import { bookService } from "../services/book.service";
-import type { IBook, IBookListParams } from "../types";
+import type { IBook, IBookListParams, BookStatus, IBookCategory } from "../types";
+import { formatCurrency, formatDate } from "@/lib/utils";
+import "./BookList.scss";
+
+const { Title, Text } = Typography;
+const { Option } = Select;
+
+// Fallback image base64
+const FALLBACK_IMAGE = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3PTWBSGcbGzM6GCKqlIBRV0dHRJFarQ0eUT8LH4BnRU0NHR0UEFVdIlFRV7TzRksomPY8uykTk/zewQfKw/9znv4yvJynLv4uLiV2dBoDiBf4qP3/ARuCRABEFAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghggQAQZQKAnYEaQBAQaASKIAQJEkAEEegJmBElAoBEgghgg0Aj8i0JO4OzsrPv69Wv+hi2qPHr0qNvf39+iI97soRIh4f3z58/u7du3SXX7Xt7Z2enevHmzfQe+oSN2apSAPj09TSrb+XKI/f379+08+A0cNRE2ANkupk+ACNPvkSPcAAEibACyXUyfABGm3yNHuAECRNgAZLuYPgEirKlHu7u7XdyytGwHAd8jjNyng4OD7vnz51dbPT8/7z58+NB9+/bt6jU/TI+AGWHEnrx48eJ/EsSmHzx40L18+fLyzxF3ZVMjEyDCiEDjMYZZS5wiPXnyZFbJaxMhQIQRGzHvWR7XCyOCXsOmiDAi1HmPMMQjDpbpEiDCiL358eNHurW/5SnWdIBbXiDCiA38/Pnzrce2YyZ4//59F3ePLNMl4PbpiL2J0L979+7yDtHDhw8vtzzvdGnEXdvUigSIsCLAWavHp/+qM0BcXMd/q25n1vF57TYBp0a3mUzilePj4+7k5KSLb6gt6ydAhPUzXnoPR0dHl79WGTNCfBnn1uvSCJdegQhLI1vvCk+fPu2ePXt2tZOYEV6/fn31dz+shwAR1sP1cqvLntbEN9MxA9xcYjsxS1jWR4AIa2Ibzx0tc44fYX/16lV6NDFLXH+YL32jwiACRBiEbf5KcXoTIsQSpzXx4N28Ja4BQoK7rgXiydbHjx/P25TaQAJEGAguWy0+2Q8PD6/Ki4R8EVl+bzBOnZY95fq9rj9zAkTI2SxdidBHqG9+skdw43borCXO/ZcJdraPWdv22uIEiLA4q7nvvCug8WTqzQveOH26fodo7g6uFe/a17W3+nFBAkRYENRdb1vkkz1CH9cPsVy/jrhr27PqMYvENYNlHAIesRiBYwRy0V+8iXP8+/fvX11Mr7L7ECueb/r48eMqm7FuI2BGWDEG8cm+7G3NEOfmdcTQw4h9/55lhm7DekRYKQPZF2ArbXTAyu4kDYB2YxUzwg0gi/41ztHnfQG26HbGel/crVrm7tNY+/1btkOEAZ2M05r4FB7r9GbAIdxaZYrHdOsgJ/wCEQY0J74TmOKnbxxT9n3FgGGWWsVdowHtjt9Nnvf7yQM2aZU/TIAIAxrw6dOnAWtZZcoEnBpNuTuObWMEiLAx1HY0ZQJEmHJ3HNvGCBBhY6jtaMoEiJB0Z29vL6ls58vxPcO8/zfrdo5qvKO+d3Fx8Wu8zf1dW4p/cPzLly/dtv9Ts/EbcvGAHhHyfBIhZ6NSiIBTo0LNNtScABFyNiqFCBChULMNNSdAhJyNSiECRCjUbEPNCRAhZ6NSiAARCjXbUHMCRMjZqBQiQIRCzTbUnAARcjYqhQgQoVCzDTUnQIScjUohAkQo1GxDzQkQIWejUogAEQo121BzAkTI2agUIkCEQs021JwAEXI2KoUIEKFQsw01J0CEnI1KIQJEKNRsQ80JECFno1KIABEKNdtQcwJEyNmoFCJAhELNNtScABFyNiqFCBChULMNNSdAhJyNSiECRCjUbEPNCRAhZ6NSiAARCjXbUHMCRMjZqBQiQIRCzTbUnAARcjYqhQgQoVCzDTUnQIScjUohAkQo1GxDzQkQIWejUogAEQo121BzAkTI2agUIkCEQs021JwAEXI2KoUIEKFQsw01J0CEnI1KIQJEKNRsQ80JECFno1KIABEKNdtQcwJEyNmoFCJAhELNNtScABFyNiqFCBChULMNNSdAhJyNSiECRCjUbEPNCRAhZ6NSiAARCjXbUHMCRMjZqBQiQIRCzTbUnAARcjYqhQgQoVCzDTUnQIScjUohAkQo1GxDzQkQIWejUogAEQo121BzAkTI2agUIkCEQs021JwAEXI2KoUIEKFQsw01J0CEnI1KIQJEKNRsQ80JECFno1KIABEKNdtQcwJEyNmoFCJAhELNNtScABFyNiqFCBChULMNNSdAhJyNSiEC/wGgKKC4YMA4TAAAAABJRU5ErkJggg==";
+
+const statusColors: Record<BookStatus, string> = {
+  PENDING: "warning",
+  DRAFT: "default",
+  PUBLISHED: "success",
+  ARCHIVED: "error",
+};
 
 export function BookList() {
   const [books, setBooks] = useState<IBook[]>([]);
   const [loading, setLoading] = useState(false);
+  const [categories, setCategories] = useState<IBookCategory[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(false);
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: 10,
@@ -65,6 +64,24 @@ export function BookList() {
     fetchBooks();
   }, [fetchBooks]);
 
+  const fetchCategories = useCallback(async () => {
+    setCategoriesLoading(true);
+    try {
+      const response = await bookService.getCategories();
+      if (response.success && response.data) {
+        setCategories(response.data as IBookCategory[]);
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    } finally {
+      setCategoriesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
   const handleSearch = (value: string) => {
     setFilters((prev) => ({
       ...prev,
@@ -81,222 +98,259 @@ export function BookList() {
     }));
   };
 
-  const handlePageChange = (page: number) => {
+  const handleCategoryChange = (value: string | undefined) => {
     setFilters((prev) => ({
       ...prev,
-      page,
+      category: value,
+      page: 1,
     }));
   };
 
-  const formatPrice = (price: number, isOnSale: boolean, salePercent: number) => {
-    if (isOnSale) {
-      const salePrice = price * (1 - salePercent / 100);
+  const handleStatusChange = (value: BookStatus | undefined) => {
+    setFilters((prev) => ({
+      ...prev,
+      status: value,
+      page: 1,
+    }));
+  };
+
+  const handleTableChange = (page: number, pageSize: number) => {
+    setFilters((prev) => ({
+      ...prev,
+      page,
+      pageSize,
+    }));
+  };
+
+  const renderPrice = (book: IBook) => {
+    if (book.isFree) {
+      return <Tag color="success">Free</Tag>;
+    }
+    if (book.isOnSale) {
+      const salePrice = book.price * (1 - book.salePercent / 100);
       return (
-        <div className="flex items-center gap-2">
-          <span className="text-muted-foreground line-through">{price}đ</span>
-          <span className="font-semibold text-destructive">{salePrice}đ</span>
-        </div>
+        <Space direction="vertical" size={0}>
+          <Text delete type="secondary">
+            {formatCurrency(book.price)}
+          </Text>
+          <Text type="danger">
+            {formatCurrency(salePrice)}
+          </Text>
+        </Space>
       );
     }
-    return <span>{price}đ</span>;
+    return <Text>{formatCurrency(book.price)}</Text>;
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
-      DRAFT: { label: "Bản nháp", variant: "outline" },
-      PUBLISHED: { label: "Đã xuất bản", variant: "default" },
-      ARCHIVED: { label: "Đã lưu trữ", variant: "secondary" },
-    };
-    const statusInfo = statusMap[status] || { label: status, variant: "outline" as const };
-    return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
-  };
+  const columns: ColumnsType<IBook> = [
+    {
+      title: "#",
+      width: 70,
+      render: (_: unknown, __: IBook, index: number) => index + 1,
+    },
+    {
+      title: "Ảnh đại diện",
+      dataIndex: "thumbnail",
+      width: 100,
+      render: (thumbnail: string | null) => (
+        <Image
+          src={thumbnail || undefined}
+          alt="Book thumbnail"
+          width={60}
+          height={80}
+          style={{ objectFit: "cover" }}
+          fallback={FALLBACK_IMAGE}
+        />
+      ),
+    },
+    {
+      title: "Tên",
+      key: "name",
+      render: (_: unknown, book: IBook) => (
+        <Space direction="vertical" size={4}>
+          <Typography.Link
+            onClick={() => {
+              // TODO: Navigate to book detail page when route is defined
+              // router.navigate({ to: "/books/detail/$slug", params: { slug: book.slug } });
+              console.log("Navigate to book:", book.slug);
+            }}
+            style={{ cursor: "pointer" }}
+          >
+            {book.title}
+          </Typography.Link>
+          <Text type="secondary" style={{ fontSize: "12px" }}>
+            ID: {book.id}
+          </Text>
+        </Space>
+      ),
+    },
+    {
+      title: "Danh mục",
+      dataIndex: "bookCategories",
+      render: (bookCategories?: IBook["bookCategories"]) => (
+        <Space size={[0, 4]} wrap>
+          {bookCategories?.map((categoryRelation) => {
+            const category = categoryRelation.category;
+            return <Tag key={category.id}>{category.title}</Tag>;
+          })}
+        </Space>
+      ),
+    },
+    {
+      title: "Publisher",
+      dataIndex: "publisher",
+      render: (publisher?: IBook["publisher"]) => (
+        <Space>
+          <Avatar src={publisher?.avatar || undefined} size="small">
+            {publisher?.username?.[0]?.toUpperCase() || "U"}
+          </Avatar>
+          <Typography.Text>{publisher?.username || "-"}</Typography.Text>
+        </Space>
+      ),
+    },
+    {
+      title: "Giá",
+      key: "price",
+      align: "right",
+      render: (_: unknown, book: IBook) => renderPrice(book),
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      render: (status: BookStatus) => (
+        <Tag color={statusColors[status]}>{status}</Tag>
+      ),
+    },
+    {
+      title: "Cập nhật lúc",
+      dataIndex: "updatedAt",
+      render: (date: string) => formatDate(date),
+    },
+    {
+      title: "Hành động",
+      key: "actions",
+      width: 100,
+      render: (_: unknown, book: IBook) => (
+        <Space>
+          <Tooltip title="Edit">
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => {
+                // TODO: Implement edit handler
+                console.log("Edit book:", book);
+              }}
+            />
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button
+              type="text"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => {
+                // TODO: Implement delete handler
+                console.log("Delete book:", book);
+              }}
+            />
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ];
 
   return (
-    <div className="space-y-4">
+    <div className="book-list-container">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="book-list-header">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">Danh sách truyện</h1>
-          <p className="text-sm text-muted-foreground">
-            Quản lý và theo dõi tất cả các truyện trong hệ thống
-          </p>
+          <Title level={2} style={{ margin: 0 }}>Danh sách truyện</Title>
+          <Text type="secondary">Quản lý và theo dõi tất cả các truyện trong hệ thống</Text>
         </div>
-        <Button>
-          <Plus className="size-4" />
+        <Button type="primary" icon={<PlusOutlined />}>
           Thêm truyện mới
         </Button>
       </div>
 
       {/* Filters */}
-      <div className="flex items-center gap-4 rounded-lg border bg-card p-4">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Tìm kiếm theo tên, tác giả..."
-              className="pl-9"
-              value={filters.keyword || ""}
-              onChange={(e) => handleSearch(e.target.value)}
-            />
-          </div>
-        </div>
-        <div className="w-48">
+      <Card className="book-list-filters">
+        <Space size="middle" style={{ width: "100%" }} wrap>
+          <Input
+            placeholder="Tìm kiếm theo tên, tác giả..."
+            prefix={<SearchOutlined />}
+            value={filters.keyword || ""}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleSearch(e.target.value)}
+            style={{ flex: 1, minWidth: 200 }}
+            allowClear
+          />
           <Select
-            value={filters.sort || "latest"}
-            onChange={(e) => handleSortChange(e.target.value)}
+            placeholder="Lọc theo danh mục"
+            value={filters.category}
+            onChange={handleCategoryChange}
+            style={{ width: 200 }}
+            allowClear
+            loading={categoriesLoading}
+            showSearch
+            optionFilterProp="label"
+            filterOption={(input, option) => {
+              const label = String(option?.label ?? "");
+              return label.toLowerCase().includes(input.toLowerCase());
+            }}
           >
-            <option value="latest">Mới nhất</option>
-            <option value="top_rated">Đánh giá cao</option>
-            <option value="most_viewed">Xem nhiều nhất</option>
-            <option value="price_asc">Giá tăng dần</option>
-            <option value="price_desc">Giá giảm dần</option>
-            <option value="free">Miễn phí</option>
+            {categories.map((category) => (
+              <Option key={category.id} value={category.id} label={category.title}>
+                {category.title}
+              </Option>
+            ))}
           </Select>
-        </div>
-      </div>
+          <Select
+            placeholder="Lọc theo trạng thái"
+            value={filters.status}
+            onChange={handleStatusChange}
+            style={{ width: 180 }}
+            allowClear
+          >
+            <Option value="DRAFT">Bản nháp</Option>
+            <Option value="PUBLISHED">Đã xuất bản</Option>
+            <Option value="ARCHIVED">Đã lưu trữ</Option>
+            <Option value="PENDING">Đang chờ</Option>
+          </Select>
+          <Select
+            placeholder="Sắp xếp"
+            value={filters.sort || "latest"}
+            onChange={handleSortChange}
+            style={{ width: 180 }}
+          >
+            <Option value="latest">Mới nhất</Option>
+            <Option value="top_rated">Đánh giá cao</Option>
+            <Option value="most_viewed">Xem nhiều nhất</Option>
+            <Option value="price_asc">Giá tăng dần</Option>
+            <Option value="price_desc">Giá giảm dần</Option>
+            <Option value="free">Miễn phí</Option>
+          </Select>
+        </Space>
+      </Card>
 
       {/* Table */}
-      <div className="rounded-lg border bg-card">
-        {loading ? (
-          <div className="flex items-center justify-center p-8">
-            <p className="text-sm text-muted-foreground">Đang tải...</p>
-          </div>
-        ) : books.length === 0 ? (
-          <div className="flex items-center justify-center p-8">
-            <p className="text-sm text-muted-foreground">Không có dữ liệu</p>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-16">Ảnh</TableHead>
-                <TableHead>Tên truyện</TableHead>
-                <TableHead>Tác giả</TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead className="text-center">Lượt xem</TableHead>
-                <TableHead className="text-center">Lượt thích</TableHead>
-                <TableHead>Giá</TableHead>
-                <TableHead className="text-right">Thao tác</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {books.map((book) => (
-                <TableRow key={book.id}>
-                  <TableCell>
-                    {book.thumbnail ? (
-                      <img
-                        src={book.thumbnail}
-                        alt={book.title}
-                        className="size-12 rounded object-cover"
-                      />
-                    ) : (
-                      <div className="flex size-12 items-center justify-center rounded bg-muted text-xs text-muted-foreground">
-                        No Image
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span className="font-medium">{book.title}</span>
-                      {book.isFree && (
-                        <Badge variant="secondary" className="mt-1 w-fit">
-                          Miễn phí
-                        </Badge>
-                      )}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <span className="text-sm text-muted-foreground">{book.author || "-"}</span>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(book.status)}</TableCell>
-                  <TableCell className="text-center">
-                    <span className="text-sm">{book.view}</span>
-                  </TableCell>
-                  <TableCell className="text-center">
-                    <span className="text-sm">{book.likeCount}</span>
-                  </TableCell>
-                  <TableCell>
-                    {book.isFree ? (
-                      <Badge variant="outline">Miễn phí</Badge>
-                    ) : (
-                      formatPrice(book.price, book.isOnSale, book.salePercent)
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button variant="ghost" size="icon-sm" title="Xem chi tiết">
-                        <Eye className="size-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon-sm" title="Chỉnh sửa">
-                        <Edit className="size-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon-sm" title="Xóa">
-                        <Trash2 className="size-4 text-destructive" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </div>
-
-      {/* Pagination */}
-      {pagination.totalPage > 1 && (
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (pagination.page > 1) {
-                    handlePageChange(pagination.page - 1);
-                  }
-                }}
-                className={pagination.page === 1 ? "pointer-events-none opacity-50" : ""}
-              />
-            </PaginationItem>
-            {Array.from({ length: pagination.totalPage }, (_, i) => i + 1).map((page) => (
-              <PaginationItem key={page}>
-                <PaginationLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handlePageChange(page);
-                  }}
-                  isActive={page === pagination.page}
-                >
-                  {page}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (pagination.page < pagination.totalPage) {
-                    handlePageChange(pagination.page + 1);
-                  }
-                }}
-                className={
-                  pagination.page === pagination.totalPage
-                    ? "pointer-events-none opacity-50"
-                    : ""
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      )}
-
-      {/* Summary */}
-      <div className="text-sm text-muted-foreground">
-        Hiển thị {books.length} / {pagination.totalItems} truyện
-      </div>
+      <Card>
+        <Table
+          columns={columns}
+          dataSource={books}
+          rowKey="id"
+          loading={loading}
+          pagination={{
+            current: pagination.page,
+            pageSize: pagination.pageSize,
+            total: pagination.totalItems,
+            showSizeChanger: true,
+            showTotal: (total: number) => `Hiển thị ${books.length} / ${total} truyện`,
+            onChange: handleTableChange,
+            onShowSizeChange: handleTableChange,
+          }}
+          locale={{
+            emptyText: "Không có dữ liệu",
+          }}
+        />
+      </Card>
     </div>
   );
 }
-

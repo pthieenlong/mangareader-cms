@@ -17,17 +17,11 @@ Techstack**
 * Build Tooling
   * Vite: ^7.2.2
   * @vitejs/plugin-react: ^5.1.0
-  * @tailwindcss/vite: ^4.1.17
 * Styling & UI
-  * Tailwind CSS: ^4.1.17
-  * tw-animate-css: ^1.4.0
-  * @radix-ui/react-slot: ^1.2.4
+  * Ant Design: ^5.24.8
+  * @ant-design/icons: ^5.5.1
+  * SCSS/Sass: ^1.83.0
   * lucide-react (icons): ^0.553.0
-  * embla-carousel-react: ^8.6.0
-  * react-day-picker: ^9.11.1
-  * clsx: ^2.1.1
-  * class-variance-authority: ^0.7.1
-  * tailwind-merge: ^3.4.0
 * Routing
   * @tanstack/react-router: ^1.135.2
   * @tanstack/router-devtools: ^1.135.2 (dev)
@@ -65,7 +59,7 @@ npm start                # Start production server
 
 ## Architecture & Critical Patterns
 
-**CRITICAL RULE:** All API calls must happen in Main Components (pages), not in Child Components. Data flows top-down.
+**CRITICAL RULE:** All API calls must be call by hooks and happen in Main Components (pages), not in Child Components. Data flows top-down.
 
 ### 1. Project Structure
 
@@ -90,7 +84,8 @@ src/
       types.ts
       index.ts
   assets/
-    global.css
+    global.scss
+    variables.scss
   docs/
   main.tsx
   index.html
@@ -135,8 +130,12 @@ src/
 
 ### 8. CSS / UI
 
-* Use TailwindCSS where applicable.
-* Reusable styles should be placed in `/styles`.
+* Use **Ant Design** components for UI elements.
+* Use **SCSS** for custom styling.
+* Component-specific styles should be placed in `ComponentName.scss` next to the component file.
+* Global styles and variables should be placed in `/assets`.
+* SCSS variables are available globally via `variables.scss`.
+* Prefer Ant Design components over custom implementations when possible.
 
 ### 9. Clean Code
 

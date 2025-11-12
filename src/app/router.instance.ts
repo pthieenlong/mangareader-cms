@@ -55,9 +55,9 @@ const settingsRoute = createRoute({
   component: SettingsPage,
 });
 
-const bookCategoriesRoute = createRoute({
+const categoriesRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/book/categories",
+  path: "/categories",
   component: BookCategoriesPage,
 });
 
@@ -70,7 +70,7 @@ const indexRoute = createRoute({
 rootRoute.addChildren([
   dashboardRoute,
   bookRoute,
-  bookCategoriesRoute,
+  categoriesRoute,
   userRoute,
   ecommerceRoute,
   contentRoute,

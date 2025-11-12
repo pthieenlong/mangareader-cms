@@ -1,41 +1,124 @@
-import type { ReactNode } from "react";
+import { Card, Statistic, Typography, Table, Tag, Button, Space, Row, Col, Checkbox, List, Segmented } from "antd";
+import { ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend,
+} from "recharts";
+import { useChartData, type TimeRange } from "@/hooks/useChartData";
+import "./dashboard.scss";
 
-type CardProps = {
+const { Title, Text } = Typography;
+
+type AnalyticCardProps = {
   title: string;
   value: string;
-  trend?: ReactNode;
+  trend?: React.ReactNode;
 };
 
-function AnalyticCard({ title, value, trend }: CardProps) {
+function AnalyticCard({ title, value, trend }: AnalyticCardProps) {
   return (
-    <div className="rounded-lg border bg-card text-card-foreground p-4 flex flex-col gap-2">
-      <div className="text-sm text-muted-foreground">{title}</div>
-      <div className="text-2xl font-semibold tracking-tight">{value}</div>
-      {trend ? <div className="text-xs text-muted-foreground">{trend}</div> : null}
-    </div>
+    <Card className="analytic-card">
+      <Statistic
+        title={<Text type="secondary">{title}</Text>}
+        value={value}
+        valueStyle={{ fontSize: 24, fontWeight: 600 }}
+      />
+      {trend && <div className="trend-text">{trend}</div>}
+    </Card>
   );
 }
 
-function MiniBar({ value }: { value: number }) {
-  return (
-    <div className="h-24 w-full flex items-end gap-1">
-      {Array.from({ length: 24 }).map((_, i) => {
-        const height = Math.max(8, Math.min(96, (Math.sin(i / 2) + 1) * 40 + value));
-        return <div key={i} className="w-2 rounded bg-primary/30" style={{ height }} />;
-      })}
-    </div>
-  );
-}
-
-// Mock data (extracted)
-const kpiCards: Array<{ title: string; value: string; trend: ReactNode }> = [
-  { title: "Người dùng mới", value: "1,248", trend: <span>+8.2% so với tuần trước</span> },
-  { title: "Doanh thu", value: "$12,480", trend: <span>+12.6% trong 30 ngày</span> },
-  { title: "Sách xuất bản", value: "342", trend: <span>+14 sách trong tuần</span> },
-  { title: "Đơn hàng", value: "1,902", trend: <span>-2.1% so với hôm qua</span> },
+// Pie chart data for user types
+const userTypeData = [
+  { name: "User thường", value: 1250, color: "#4f85d3" },
+  { name: "Publisher", value: 320, color: "#52c41a" },
+  { name: "Subscriber", value: 580, color: "#faad14" },
 ];
 
-const recentOrders: Array<{ id: string; date: string; customer: string; amount: string; status: string }> = [
+function UserTypePieChart() {
+  return (
+    <ResponsiveContainer width="100%" height={240}>
+      <PieChart>
+        <Pie
+          data={userTypeData}
+          cx="50%"
+          cy="50%"
+          labelLine={false}
+          label={({ name, percent }) => `${name}: ${percent ? (percent * 100).toFixed(0) : 0}%`}
+          outerRadius={80}
+          fill="#8884d8"
+          dataKey="value"
+        >
+          {userTypeData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={entry.color} />
+          ))}
+        </Pie>
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  );
+}
+
+// Mock data
+const kpiCards: Array<{ title: string; value: string; trend: React.ReactNode }> = [
+  {
+    title: "Người dùng mới",
+    value: "1,248",
+    trend: (
+      <Text type="secondary" style={{ fontSize: 12 }}>
+        <ArrowUpOutlined style={{ color: "#52c41a" }} /> +8.2% so với tuần trước
+      </Text>
+    ),
+  },
+  {
+    title: "Doanh thu",
+    value: "$12,480",
+    trend: (
+      <Text type="secondary" style={{ fontSize: 12 }}>
+        <ArrowUpOutlined style={{ color: "#52c41a" }} /> +12.6% trong 30 ngày
+      </Text>
+    ),
+  },
+  {
+    title: "Sách xuất bản",
+    value: "342",
+    trend: (
+      <Text type="secondary" style={{ fontSize: 12 }}>
+        <ArrowUpOutlined style={{ color: "#52c41a" }} /> +14 sách trong tuần
+      </Text>
+    ),
+  },
+  {
+    title: "Đơn hàng",
+    value: "1,902",
+    trend: (
+      <Text type="secondary" style={{ fontSize: 12 }}>
+        <ArrowDownOutlined style={{ color: "#ff4d4f" }} /> -2.1% so với hôm qua
+      </Text>
+    ),
+  },
+];
+
+type OrderRecord = {
+  id: string;
+  date: string;
+  customer: string;
+  amount: string;
+  status: string;
+};
+
+const recentOrders: OrderRecord[] = [
   { id: "ORD-92341", date: "11/03", customer: "Nguyễn An", amount: "$49.90", status: "PAID" },
   { id: "ORD-92340", date: "11/03", customer: "Trần Bình", amount: "$19.00", status: "PENDING" },
   { id: "ORD-92339", date: "11/02", customer: "Lê Chi", amount: "$120.00", status: "PAID" },
@@ -64,176 +147,293 @@ const todoTasks: Array<{ label: string; done: boolean }> = [
   { label: "Xem thống kê người dùng", done: false },
 ];
 
-export default function DashboardPage() {
-  return (
-    <div className="grid grid-cols-1 gap-6">
-      {/* Heading + Description */}
-      <section className="grid gap-2">
-        <h1 className="text-2xl font-semibold tracking-tight">Tổng quan hệ thống</h1>
-        <p className="text-sm text-muted-foreground">
-          Theo dõi số liệu chính, xu hướng theo thời gian và hoạt động gần đây của nền tảng.
+const orderColumns: ColumnsType<OrderRecord> = [
+  {
+    title: "Mã",
+    dataIndex: "id",
+    key: "id",
+    render: (text: string) => <Text strong>{text}</Text>,
+  },
+  {
+    title: "Ngày",
+    dataIndex: "date",
+    key: "date",
+  },
+  {
+    title: "Khách hàng",
+    dataIndex: "customer",
+    key: "customer",
+  },
+  {
+    title: "Số tiền",
+    dataIndex: "amount",
+    key: "amount",
+  },
+  {
+    title: "Trạng thái",
+    dataIndex: "status",
+    key: "status",
+    render: (status: string) => {
+      const statusMap: Record<string, { color: string; text: string }> = {
+        PAID: { color: "success", text: "Đã thanh toán" },
+        PENDING: { color: "warning", text: "Đang chờ" },
+        REFUNDED: { color: "error", text: "Hoàn tiền" },
+      };
+      const statusInfo = statusMap[status] || { color: "default", text: status };
+      return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>;
+    },
+  },
+];
+
+// Helper function to get time range label
+const getTimeRangeLabel = (timeRange: TimeRange): string => {
+  switch (timeRange) {
+    case "week":
+      return "Tuần";
+    case "month":
+      return "Tháng";
+    case "year":
+      return "Năm";
+    default:
+      return "Tháng";
+  }
+};
+
+// Custom tooltip for the chart
+type TooltipProps = {
+  active?: boolean;
+  payload?: Array<{
+    value: number;
+    name: string;
+    payload: {
+      label: string;
+      revenue: number;
+      orders: number;
+    };
+  }>;
+  timeRange: TimeRange;
+};
+
+const CustomTooltip = ({ active, payload, timeRange }: TooltipProps) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    const labelPrefix = timeRange === "week" ? "Ngày" : timeRange === "month" ? "Ngày" : "Tháng";
+    return (
+      <div className="chart-tooltip">
+        <p style={{ margin: 0, fontWeight: 500 }}>{`${labelPrefix} ${data.label}`}</p>
+        <p style={{ margin: "4px 0 0 0", color: "#4f85d3" }}>
+          Doanh thu: ${data.revenue.toLocaleString("vi-VN")}
         </p>
-      </section>
+        <p style={{ margin: "4px 0 0 0", color: "#52c41a" }}>
+          Đơn hàng: {data.orders}
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
 
-      {/* Analytic Boxes */}
-      <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {kpiCards.map((k) => (
-          <AnalyticCard key={k.title} title={k.title} value={k.value} trend={k.trend} />
-        ))}
-      </section>
+type RevenueChartProps = {
+  data: Array<{ label: string; revenue: number; orders: number }>;
+  timeRange: TimeRange;
+};
 
-      {/* Chart Section */}
-      <section className="rounded-lg border bg-card p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-lg font-medium">Hiệu suất tháng</h2>
-            <p className="text-sm text-muted-foreground">Doanh thu và đơn hàng theo ngày</p>
-          </div>
-          <div className="text-sm text-muted-foreground">Tháng hiện tại</div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="col-span-2">
-            <svg viewBox="0 0 600 240" className="w-full h-[240px]">
-              <defs>
-                <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
-                  <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.25" />
-                  <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0" />
-                </linearGradient>
-              </defs>
-              <rect width="600" height="240" rx="8" className="fill-muted/30" />
-              {Array.from({ length: 5 }).map((_, i) => (
-                <line
-                  key={i}
-                  x1="24"
-                  x2="576"
-                  y1={40 + i * 40}
-                  y2={40 + i * 40}
-                  className="stroke-muted"
-                  strokeDasharray="4 4"
-                />
-              ))}
-              {/* Area line (dummy data) */}
-              <path
-                d="M24,180 C80,160 120,120 180,140 C240,160 280,80 340,110 C400,140 460,90 520,120 L520,200 L24,200 Z"
-                fill="url(#area)"
-              />
-              <path
-                d="M24,180 C80,160 120,120 180,140 C240,160 280,80 340,110 C400,140 460,90 520,120"
-                className="stroke-primary"
-                fill="none"
-                strokeWidth="3"
-              />
-            </svg>
-          </div>
-          <div className="col-span-1">
-            <div className="rounded-lg border p-4">
-              <div className="text-sm text-muted-foreground mb-2">Đơn hàng theo giờ</div>
-              <MiniBar value={22} />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Extra sections */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Recent Orders */}
-        <div className="lg:col-span-2 rounded-lg border bg-card p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-medium">Đơn hàng gần đây</h3>
-            <span className="text-sm text-muted-foreground">Xem tất cả</span>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-muted-foreground">
-                <tr className="text-left">
-                  <th className="py-2 pr-4">Mã</th>
-                  <th className="py-2 pr-4">Ngày</th>
-                  <th className="py-2 pr-4">Khách hàng</th>
-                  <th className="py-2 pr-4">Số tiền</th>
-                  <th className="py-2">Trạng thái</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentOrders.map((o) => (
-                  <tr key={o.id} className="border-t">
-                    <td className="py-2 pr-4 font-medium">{o.id}</td>
-                    <td className="py-2 pr-4">{o.date}</td>
-                    <td className="py-2 pr-4">{o.customer}</td>
-                    <td className="py-2 pr-4">{o.amount}</td>
-                    <td className="py-2">
-                      <span
-                        className="px-2 py-1 text-xs rounded"
-                        data-status={o.status}
-                        style={{
-                          background: "hsl(var(--muted))",
-                        }}
-                      >
-                        {o.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="rounded-lg border bg-card p-4">
-          <h3 className="font-medium mb-3">Hành động nhanh</h3>
-          <div className="grid gap-2">
-            <button className="px-3 py-2 rounded-md border text-left hover:bg-muted transition">
-              Tạo sách mới
-            </button>
-            <button className="px-3 py-2 rounded-md border text-left hover:bg-muted transition">
-              Thêm chương mới
-            </button>
-            <button className="px-3 py-2 rounded-md border text-left hover:bg-muted transition">
-              Xem báo cáo doanh thu
-            </button>
-          </div>
-        </div>
-      </section>
-
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* Top Books */}
-        <div className="rounded-lg border bg-card p-4">
-          <h3 className="font-medium mb-3">Sách nổi bật</h3>
-          <ul className="grid gap-2 text-sm">
-            {topBooks.map((b) => (
-              <li key={b.title} className="flex items-center justify-between">
-                <span className="truncate">{b.title}</span>
-                <span className="text-muted-foreground">{b.sales} bán</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Notifications */}
-        <div className="rounded-lg border bg-card p-4">
-          <h3 className="font-medium mb-3">Thông báo</h3>
-          <ul className="grid gap-2 text-sm">
-            {notificationsList.map((n, i) => (
-              <li key={i} className="rounded-md border p-2 bg-muted/40">{n}</li>
-            ))}
-          </ul>
-        </div>
-
-        {/* Tasks */}
-        <div className="rounded-lg border bg-card p-4">
-          <h3 className="font-medium mb-3">Việc cần làm</h3>
-          <ul className="grid gap-2 text-sm">
-            {todoTasks.map((t) => (
-              <li key={t.label} className="flex items-center gap-2">
-                <input type="checkbox" checked={t.done} readOnly className="accent-primary" />
-                <span className={t.done ? "line-through text-muted-foreground" : ""}>{t.label}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-    </div>
+function RevenueChart({ data, timeRange }: RevenueChartProps) {
+  return (
+    <ResponsiveContainer width="100%" height={240}>
+      <AreaChart
+        data={data}
+        margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+      >
+        <defs>
+          <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#4f85d3" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="#4f85d3" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+        <XAxis
+          dataKey="label"
+          tick={{ fontSize: 12, fill: "#8c8c8c" }}
+          tickLine={{ stroke: "#e5e7eb" }}
+        />
+        <YAxis
+          tick={{ fontSize: 12, fill: "#8c8c8c" }}
+          tickLine={{ stroke: "#e5e7eb" }}
+        />
+        <Tooltip content={<CustomTooltip timeRange={timeRange} />} />
+        <Area
+          type="monotone"
+          dataKey="revenue"
+          stroke="#4f85d3"
+          strokeWidth={2}
+          fillOpacity={1}
+          fill="url(#colorRevenue)"
+        />
+      </AreaChart>
+    </ResponsiveContainer>
   );
 }
 
+export default function DashboardPage() {
+  const { chartData, timeRange, setTimeRange } = useChartData();
 
+  return (
+    <div className="dashboard-container">
+      {/* Heading + Description */}
+      <div className="dashboard-header">
+        <Title level={2} style={{ margin: 0 }}>
+          Tổng quan hệ thống
+        </Title>
+        <Text type="secondary">
+          Theo dõi số liệu chính, xu hướng theo thời gian và hoạt động gần đây của nền tảng.
+        </Text>
+      </div>
+
+      {/* Analytic Boxes */}
+      <Row gutter={[16, 16]}>
+        {kpiCards.map((k) => (
+          <Col xs={24} sm={12} lg={6} key={k.title}>
+            <AnalyticCard title={k.title} value={k.value} trend={k.trend} />
+          </Col>
+        ))}
+      </Row>
+
+      {/* Chart Sections */}
+      <Row gutter={[16, 16]}>
+        {/* Revenue Chart */}
+        <Col xs={24} lg={16}>
+          <Card className="chart-card">
+            <div className="chart-header">
+              <div>
+                <Title level={4} style={{ margin: 0 }}>
+                  Hiệu suất {getTimeRangeLabel(timeRange)}
+                </Title>
+                <Text type="secondary">
+                  Doanh thu và đơn hàng theo {timeRange === "week" ? "ngày" : timeRange === "month" ? "ngày" : "tháng"}
+                </Text>
+              </div>
+              <Segmented
+                options={[
+                  { label: "Tuần", value: "week" },
+                  { label: "Tháng", value: "month" },
+                  { label: "Năm", value: "year" },
+                ]}
+                value={timeRange}
+                onChange={(value) => setTimeRange(value as TimeRange)}
+              />
+            </div>
+            <div className="chart-wrapper">
+              <RevenueChart data={chartData} timeRange={timeRange} />
+            </div>
+          </Card>
+        </Col>
+
+        {/* User Type Pie Chart */}
+        <Col xs={24} lg={8}>
+          <Card className="pie-chart-card">
+            <Title level={4} style={{ margin: "0 0 8px 0" }}>
+              Phân loại người dùng
+            </Title>
+            <Text type="secondary" style={{ display: "block", marginBottom: 16 }}>
+              Thống kê theo loại tài khoản
+            </Text>
+            <UserTypePieChart />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Extra sections */}
+      <Row gutter={[16, 16]}>
+        {/* Recent Orders */}
+        <Col xs={24} lg={16}>
+          <Card
+            title="Đơn hàng gần đây"
+            extra={<a>Xem tất cả</a>}
+            className="orders-card"
+          >
+            <Table
+              columns={orderColumns}
+              dataSource={recentOrders}
+              rowKey="id"
+              pagination={false}
+              size="small"
+            />
+          </Card>
+        </Col>
+
+        {/* Quick Actions */}
+        <Col xs={24} lg={8}>
+          <Card title="Hành động nhanh" className="actions-card">
+            <Space direction="vertical" style={{ width: "100%" }} size="small">
+              <Button block style={{ textAlign: "left" }}>
+                Tạo sách mới
+              </Button>
+              <Button block style={{ textAlign: "left" }}>
+                Thêm chương mới
+              </Button>
+              <Button block style={{ textAlign: "left" }}>
+                Xem báo cáo doanh thu
+              </Button>
+            </Space>
+          </Card>
+        </Col>
+      </Row>
+
+      <Row gutter={[16, 16]}>
+        {/* Top Books */}
+        <Col xs={24} lg={8}>
+          <Card title="Sách nổi bật" className="top-books-card">
+            <List
+              dataSource={topBooks}
+              renderItem={(item) => (
+                <List.Item>
+                  <div className="book-item">
+                    <Text ellipsis style={{ flex: 1 }}>
+                      {item.title}
+                    </Text>
+                    <Text type="secondary">{item.sales} bán</Text>
+                  </div>
+                </List.Item>
+              )}
+            />
+          </Card>
+        </Col>
+
+        {/* Notifications */}
+        <Col xs={24} lg={8}>
+          <Card title="Thông báo" className="notifications-card">
+            <List
+              dataSource={notificationsList}
+              renderItem={(item) => (
+                <List.Item>
+                  <Card size="small" className="notification-item">
+                    {item}
+                  </Card>
+                </List.Item>
+              )}
+            />
+          </Card>
+        </Col>
+
+        {/* Tasks */}
+        <Col xs={24} lg={8}>
+          <Card title="Việc cần làm" className="tasks-card">
+            <List
+              dataSource={todoTasks}
+              renderItem={(item) => (
+                <List.Item>
+                  <Checkbox checked={item.done} disabled>
+                    <Text delete={item.done} type={item.done ? "secondary" : undefined}>
+                      {item.label}
+                    </Text>
+                  </Checkbox>
+                </List.Item>
+              )}
+            />
+          </Card>
+        </Col>
+      </Row>
+    </div>
+  );
+}

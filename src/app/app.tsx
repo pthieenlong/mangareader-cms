@@ -79,6 +79,9 @@ export default function AppLayout() {
     const labelMap: Record<string, string> = {
       dashboard: "Dashboard",
       book: "Quản lý truyện",
+      create: "Tạo truyện",
+      edit: "Chỉnh sửa truyện",
+      chapters: "Quản lý chương",
       categories: "Quản lý danh mục",
       user: "Quản lý người dùng",
       ecommerce: "Quản lý đơn hàng",
@@ -100,7 +103,11 @@ export default function AppLayout() {
 
   const selectedKeys = useMemo(() => {
     const path = location.pathname;
-    return [path];
+    const segments = path.split("/").filter(Boolean);
+    if (segments.length > 0) {
+      return [`/${segments[0]}`];
+    }
+    return ["/dashboard"];
   }, [location.pathname]);
 
   const accountMenuItems = [

@@ -2,6 +2,10 @@ import { createRootRoute, createRouter, createRoute } from "@tanstack/react-rout
 import AppLayout from "@/app/app";
 import DashboardPage from "@/features/dashboard";
 import BookPage from "@/features/book";
+import BookDetailPage from "@/features/book/detail";
+import CreateBookPage from "@/features/book/create";
+import EditBookPage from "@/features/book/edit";
+import ChapterDetailPage from "@/features/book/chapter-detail";
 import UserPage from "@/features/user";
 import EcommercePage from "@/features/ecommerce";
 import ContentPage from "@/features/content";
@@ -23,6 +27,30 @@ const bookRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/book",
   component: BookPage,
+});
+
+const bookCreateRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/book/create",
+  component: CreateBookPage,
+});
+
+const bookDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/book/$slug",
+  component: BookDetailPage,
+});
+
+const bookEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/book/$slug/edit",
+  component: EditBookPage,
+});
+
+const chapterDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/book/$slug/chapters/$chapterSlug",
+  component: ChapterDetailPage,
 });
 
 const userRoute = createRoute({
@@ -70,6 +98,10 @@ const indexRoute = createRoute({
 rootRoute.addChildren([
   dashboardRoute,
   bookRoute,
+  bookCreateRoute,
+  bookDetailRoute,
+  bookEditRoute,
+  chapterDetailRoute,
   categoriesRoute,
   userRoute,
   ecommerceRoute,

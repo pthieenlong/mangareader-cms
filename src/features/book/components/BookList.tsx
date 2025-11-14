@@ -5,6 +5,7 @@ import type { ColumnsType } from "antd/es/table";
 import { bookService } from "../services/book.service";
 import type { IBook, IBookListParams, BookStatus, IBookCategory } from "../types";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import { router } from "@/app/router.instance";
 import "./BookList.scss";
 
 const { Title, Text } = Typography;
@@ -170,9 +171,8 @@ export function BookList() {
         <Space direction="vertical" size={4}>
           <Typography.Link
             onClick={() => {
-              // TODO: Navigate to book detail page when route is defined
-              // router.navigate({ to: "/books/detail/$slug", params: { slug: book.slug } });
-              console.log("Navigate to book:", book.slug);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              router.navigate({ to: "/book/$slug", params: { slug: book.slug } } as any);
             }}
             style={{ cursor: "pointer" }}
           >
@@ -237,8 +237,10 @@ export function BookList() {
               type="text"
               icon={<EditOutlined />}
               onClick={() => {
-                // TODO: Implement edit handler
-                console.log("Edit book:", book);
+                router.navigate({
+                  to: "/book/$slug/edit",
+                  params: { slug: book.slug },
+                } as never);
               }}
             />
           </Tooltip>
@@ -266,7 +268,13 @@ export function BookList() {
           <Title level={2} style={{ margin: 0 }}>Danh sách truyện</Title>
           <Text type="secondary">Quản lý và theo dõi tất cả các truyện trong hệ thống</Text>
         </div>
-        <Button type="primary" icon={<PlusOutlined />}>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            router.navigate({ to: "/book/create" } as never);
+          }}
+        >
           Thêm truyện mới
         </Button>
       </div>

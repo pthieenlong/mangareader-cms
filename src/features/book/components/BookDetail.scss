@@ -1,0 +1,45 @@
+.book-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+
+  &__actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  &__header {
+    background: #fff;
+  }
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  &__price {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__categories {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  &__stats {
+    .ant-card {
+      text-align: center;
+    }
+  }
+
+  &__section {
+    background: #fff;
+  }
+}

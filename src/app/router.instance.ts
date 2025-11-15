@@ -1,4 +1,8 @@
-import { createRootRoute, createRouter, createRoute } from "@tanstack/react-router";
+import {
+  createRootRoute,
+  createRouter,
+  createRoute,
+} from "@tanstack/react-router";
 import AppLayout from "@/app/app";
 import DashboardPage from "@/features/dashboard";
 import BookPage from "@/features/book";
@@ -11,7 +15,8 @@ import EcommercePage from "@/features/ecommerce";
 import ContentPage from "@/features/content";
 import NotificationsPage from "@/features/notifications";
 import SettingsPage from "@/features/settings";
-import BookCategoriesPage from "@/features/book/categories";
+import CategoriesPage from "@/features/category";
+import OrderPage from "@/features/order";
 
 const rootRoute = createRootRoute({
   component: AppLayout,
@@ -86,7 +91,13 @@ const settingsRoute = createRoute({
 const categoriesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/categories",
-  component: BookCategoriesPage,
+  component: CategoriesPage,
+});
+
+const orderRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/order",
+  component: OrderPage,
 });
 
 const indexRoute = createRoute({
@@ -104,6 +115,7 @@ rootRoute.addChildren([
   chapterDetailRoute,
   categoriesRoute,
   userRoute,
+  orderRoute,
   ecommerceRoute,
   contentRoute,
   notificationsRoute,
@@ -120,5 +132,3 @@ declare module "@tanstack/react-router" {
     router: typeof router;
   }
 }
-
-

@@ -9,4 +9,11 @@ export interface ICategory {
   deletedAt?: string | null;
 }
 
+export interface CreateCategoryPayload {
+  title: string;
+  slug: string;
+  description?: string | null;
+  thumbnail?: string | null;
+}
+
 

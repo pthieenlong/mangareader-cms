@@ -6,8 +6,36 @@
 
 .categories-header {
   display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.category-create {
+  display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 16px;
+}
+
+.category-create-card {
+  padding: 24px;
+}
+
+.category-create__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.category-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 

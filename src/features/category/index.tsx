@@ -1,9 +1,10 @@
 import { Card, Typography, Table, Image, Space, Button, Tooltip } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useCategories } from "./hooks/useCategories";
 import type { ICategory } from "./types";
 import { formatDate } from "@/lib/utils";
+import { router } from "@/app/router.instance";
 import "./category.scss";
 
 const { Title, Text } = Typography;
@@ -81,8 +82,10 @@ export default function CategoriesPage() {
               type="text"
               icon={<EditOutlined />}
               onClick={() => {
-                // TODO: Implement edit handler
-                console.log("Edit category:", record);
+                router.navigate({
+                  to: "/categories/$slug/edit",
+                  params: { slug: record.slug },
+                } as never);
               }}
             />
           </Tooltip>
@@ -105,12 +108,23 @@ export default function CategoriesPage() {
   return (
     <div className="categories-container">
       <div className="categories-header">
-        <Title level={2} style={{ margin: 0 }}>
-          Danh mục sách
-        </Title>
-        <Text type="secondary">
-          Quản lý phân loại, thể loại và tag của sách.
-        </Text>
+        <div>
+          <Title level={2} style={{ margin: 0 }}>
+            Danh mục sách
+          </Title>
+          <Text type="secondary">
+            Quản lý phân loại, thể loại và tag của sách.
+          </Text>
+        </div>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => {
+            router.navigate({ to: "/categories/create" } as never);
+          }}
+        >
+          Thêm danh mục
+        </Button>
       </div>
       <Card>
         <Table

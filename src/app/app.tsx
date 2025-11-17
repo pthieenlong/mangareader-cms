@@ -76,11 +76,11 @@ export default function AppLayout() {
   const breadcrumbs = useMemo(() => {
     const path = location.pathname || "/";
     const segments = path.split("/").filter(Boolean);
-    const labelMap: Record<string, string> = {
+    const segmentLabelMap: Record<string, string> = {
       dashboard: "Dashboard",
       book: "Quản lý truyện",
-      create: "Tạo truyện",
-      edit: "Chỉnh sửa truyện",
+      create: "Tạo mới",
+      edit: "Chỉnh sửa",
       chapters: "Quản lý chương",
       categories: "Quản lý danh mục",
       user: "Quản lý người dùng",
@@ -89,11 +89,16 @@ export default function AppLayout() {
       notifications: "Thông báo",
       settings: "Cài đặt",
     };
+    const pathLabelMap: Record<string, string> = {
+      "/book/create": "Tạo truyện",
+      "/categories/create": "Tạo danh mục",
+    };
     const crumbs: Array<{ href: string; title: string }> = [];
     let acc = "";
     for (const seg of segments) {
       acc += `/${seg}`;
-      crumbs.push({ href: acc, title: labelMap[seg] ?? seg });
+      const title = pathLabelMap[acc] ?? segmentLabelMap[seg] ?? seg;
+      crumbs.push({ href: acc, title });
     }
     if (crumbs.length === 0) {
       return [{ href: "/dashboard", title: "Dashboard" }];

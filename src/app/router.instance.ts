@@ -16,6 +16,8 @@ import ContentPage from "@/features/content";
 import NotificationsPage from "@/features/notifications";
 import SettingsPage from "@/features/settings";
 import CategoriesPage from "@/features/category";
+import CreateCategoryPage from "@/features/category/create";
+import EditCategoryPage from "@/features/category/edit";
 import OrderPage from "@/features/order";
 
 const rootRoute = createRootRoute({
@@ -94,6 +96,18 @@ const categoriesRoute = createRoute({
   component: CategoriesPage,
 });
 
+const categoryCreateRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/categories/create",
+  component: CreateCategoryPage,
+});
+
+const categoryEditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/categories/$slug/edit",
+  component: EditCategoryPage,
+});
+
 const orderRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/order",
@@ -114,6 +128,8 @@ rootRoute.addChildren([
   bookEditRoute,
   chapterDetailRoute,
   categoriesRoute,
+  categoryCreateRoute,
+  categoryEditRoute,
   userRoute,
   orderRoute,
   ecommerceRoute,

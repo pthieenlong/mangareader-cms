@@ -1,9 +1,18 @@
 import axiosInstance from "@/lib/axios";
 import type { CustomResponse } from "@/lib/custom";
+import type { CreateCategoryPayload } from "../types";
 
 export const categoryService = {
   async getCategories(): Promise<CustomResponse> {
     const response = await axiosInstance.get<CustomResponse>("/admin/category");
+    return response.data;
+  },
+
+  async createCategory(payload: CreateCategoryPayload): Promise<CustomResponse> {
+    const response = await axiosInstance.post<CustomResponse>(
+      "/admin/category",
+      payload
+    );
     return response.data;
   },
 

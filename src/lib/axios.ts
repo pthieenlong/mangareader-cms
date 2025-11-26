@@ -3,10 +3,9 @@ import type { CustomResponse } from "@/lib/custom";
 
 // Get API URL from environment variable, fallback to default
 const API_URL = import.meta.env.VITE_API_URL || "http://157.66.101.220:3000";
-const API_BASE_URL = `${API_URL}/api`;
 
 const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_URL,
   withCredentials: true,
   timeout: 10000,
   headers: {

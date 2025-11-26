@@ -26,13 +26,59 @@ export function useUsers(initialParams?: IUserListParams) {
     try {
       const response = await userService.getUsers(filters);
       if (response.success && response.data) {
-        setUsers(response.data as IUser[]);
+        const nextUsers = response.data as IUser[];
+        setUsers(nextUsers);
         if (response.pagination) {
-          setPagination(response.pagination);
+          const rawPagination = response.pagination as Pagination & {
+            total?: number;
+            totalCount?: number;
+            itemCount?: number;
+            currentPage?: number;
+          };
+          const normalizedLimit = rawPagination.limit ?? filters.limit ?? 10;
+          const derivedTotalItems =
+            rawPagination.totalItems ??
+            rawPagination.total ??
+            rawPagination.totalCount ??
+            rawPagination.itemCount ??
+            (rawPagination.totalPage
+              ? rawPagination.totalPage * normalizedLimit
+              : undefined);
+          const normalizedTotalItems =
+            derivedTotalItems ?? nextUsers.length ?? 0;
+          const normalizedTotalPage =
+            rawPagination.totalPage ??
+            Math.max(
+              1,
+              Math.ceil(normalizedTotalItems / (normalizedLimit || 1))
+            );
+
+          setPagination({
+            page:
+              rawPagination.page ??
+              rawPagination.currentPage ??
+              filters.page ??
+              1,
+            limit: normalizedLimit || 10,
+            totalPage: normalizedTotalPage,
+            totalItems: normalizedTotalItems,
+          });
+        } else {
+          setPagination((prev) => {
+            const limit = filters.limit ?? prev.limit ?? 10;
+            const fallbackTotal = nextUsers.length;
+            return {
+              page: filters.page ?? prev.page ?? 1,
+              limit,
+              totalPage: Math.max(1, Math.ceil(fallbackTotal / limit)),
+              totalItems: fallbackTotal,
+            };
+          });
         }
       } else {
         const errorMessage =
-          response.message || "Không thể tải danh sách người dùng, vui lòng thử lại.";
+          response.message ||
+          "Không thể tải danh sách người dùng, vui lòng thử lại.";
         message.warning(errorMessage);
         setError(new Error(errorMessage));
       }
@@ -58,9 +104,12 @@ export function useUsers(initialParams?: IUserListParams) {
     }));
   }, []);
 
-  const handlePageChange = useCallback((page: number, pageSize: number) => {
-    updateFilters({ page, limit: pageSize });
-  }, [updateFilters]);
+  const handlePageChange = useCallback(
+    (page: number, pageSize: number) => {
+      updateFilters({ page, limit: pageSize });
+    },
+    [updateFilters]
+  );
 
   return {
     users,
@@ -73,4 +122,3 @@ export function useUsers(initialParams?: IUserListParams) {
     handlePageChange,
   };
 }
-

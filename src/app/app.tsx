@@ -10,7 +10,16 @@ import {
   SettingOutlined,
   AppstoreOutlined,
 } from "@ant-design/icons";
-import { Layout, Menu, Input, Button, Breadcrumb, Space, Avatar, Dropdown } from "antd";
+import {
+  Layout,
+  Menu,
+  Input,
+  Button,
+  Breadcrumb,
+  Space,
+  Avatar,
+  Dropdown,
+} from "antd";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
 import "./app.scss";
@@ -52,7 +61,7 @@ export default function AppLayout() {
       icon: <UserOutlined />,
     },
     {
-      key: "/ecommerce",
+      key: "/orders",
       label: "Quản lý đơn hàng",
       icon: <ShoppingCartOutlined />,
     },
@@ -160,9 +169,7 @@ export default function AppLayout() {
           }}
           className="sidebar-menu"
         />
-        <div className="sidebar-footer">
-          © {currentYear} MangaReader
-        </div>
+        <div className="sidebar-footer">© {currentYear} MangaReader</div>
       </Sider>
       <Layout>
         <Header className="app-header">

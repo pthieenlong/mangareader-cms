@@ -1,0 +1,21 @@
+.user-detail-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  &__profile {
+    width: 100%;
+  }
+
+  &__avatar-upload {
+    align-self: center;
+  }
+}

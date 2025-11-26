@@ -16,7 +16,6 @@ export function useOrders(initialParams?: IOrderListParams) {
   });
   const [filters, setFilters] = useState<IOrderListParams>({
     page: 1,
-    limit: 10,
     sortBy: "createdAt",
     sortOrder: "desc",
     ...initialParams,
@@ -34,7 +33,8 @@ export function useOrders(initialParams?: IOrderListParams) {
         }
       } else {
         const errorMessage =
-          response.message || "Không thể tải danh sách đơn hàng, vui lòng thử lại.";
+          response.message ||
+          "Không thể tải danh sách đơn hàng, vui lòng thử lại.";
         message.warning(errorMessage);
         setError(new Error(errorMessage));
       }
@@ -60,9 +60,12 @@ export function useOrders(initialParams?: IOrderListParams) {
     }));
   }, []);
 
-  const handlePageChange = useCallback((page: number, pageSize: number) => {
-    updateFilters({ page, limit: pageSize });
-  }, [updateFilters]);
+  const handlePageChange = useCallback(
+    (page: number, pageSize: number) => {
+      updateFilters({ page, limit: pageSize });
+    },
+    [updateFilters]
+  );
 
   return {
     orders,
@@ -75,6 +78,3 @@ export function useOrders(initialParams?: IOrderListParams) {
     handlePageChange,
   };
 }
-
-
-

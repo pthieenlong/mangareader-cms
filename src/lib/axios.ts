@@ -1,8 +1,7 @@
 import axios, { AxiosError } from "axios";
 import type { CustomResponse } from "@/lib/custom";
-const API_BASE_URL = import.meta.env.VITE_API_URL;
 const axiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: "/api",
   withCredentials: true,
   timeout: 10000,
   headers: {
@@ -13,6 +12,9 @@ const axiosInstance = axios.create({
 });
 axiosInstance.interceptors.request.use(
   (config) => {
+    if (config.data instanceof FormData) {
+      delete config.headers["Content-Type"];
+    }
     return config;
   },
   (error) => Promise.reject(error)
@@ -55,7 +57,10 @@ export const fetchMe = async (): Promise<CustomResponse> => {
     const res = await axiosInstance.get<CustomResponse>("/auth/me");
     return res.data;
   } catch (err: unknown) {
-    if (err instanceof AxiosError && (err.response?.status === 401 || err.response?.status === 403)) {
+    if (
+      err instanceof AxiosError &&
+      (err.response?.status === 401 || err.response?.status === 403)
+    ) {
       try {
         await axiosInstance.post("/auth/refresh-token");
         const retry = await axiosInstance.get<CustomResponse>("/auth/me");

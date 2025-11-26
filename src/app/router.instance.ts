@@ -7,11 +7,9 @@ import AppLayout from "@/app/app";
 import DashboardPage from "@/features/dashboard";
 import BookPage from "@/features/book";
 import BookDetailPage from "@/features/book/detail";
-import CreateBookPage from "@/features/book/create";
-import EditBookPage from "@/features/book/edit";
 import ChapterDetailPage from "@/features/book/chapter-detail";
 import UserPage from "@/features/user";
-import EcommercePage from "@/features/ecommerce";
+import UserDetailPage from "@/features/user/detail";
 import ContentPage from "@/features/content";
 import NotificationsPage from "@/features/notifications";
 import SettingsPage from "@/features/settings";
@@ -19,6 +17,7 @@ import CategoriesPage from "@/features/category";
 import CreateCategoryPage from "@/features/category/create";
 import EditCategoryPage from "@/features/category/edit";
 import OrderPage from "@/features/order";
+import OrderDetailPage from "@/features/order/detail";
 
 const rootRoute = createRootRoute({
   component: AppLayout,
@@ -36,22 +35,10 @@ const bookRoute = createRoute({
   component: BookPage,
 });
 
-const bookCreateRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/book/create",
-  component: CreateBookPage,
-});
-
 const bookDetailRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/book/$slug",
   component: BookDetailPage,
-});
-
-const bookEditRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/book/$slug/edit",
-  component: EditBookPage,
 });
 
 const chapterDetailRoute = createRoute({
@@ -66,10 +53,16 @@ const userRoute = createRoute({
   component: UserPage,
 });
 
+const userDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/user/$id",
+  component: UserDetailPage,
+});
+
 const ecommerceRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/ecommerce",
-  component: EcommercePage,
+  path: "/orders",
+  component: OrderPage,
 });
 
 const contentRoute = createRoute({
@@ -114,6 +107,12 @@ const orderRoute = createRoute({
   component: OrderPage,
 });
 
+const orderDetailRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/order/$userId/$orderId",
+  component: OrderDetailPage,
+});
+
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
@@ -123,15 +122,15 @@ const indexRoute = createRoute({
 rootRoute.addChildren([
   dashboardRoute,
   bookRoute,
-  bookCreateRoute,
   bookDetailRoute,
-  bookEditRoute,
   chapterDetailRoute,
   categoriesRoute,
   categoryCreateRoute,
   categoryEditRoute,
   userRoute,
+  userDetailRoute,
   orderRoute,
+  orderDetailRoute,
   ecommerceRoute,
   contentRoute,
   notificationsRoute,

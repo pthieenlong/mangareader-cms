@@ -11,15 +11,21 @@ import {
   Input,
   Select,
   Modal,
-  Form,
-  Upload,
   message,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import { EditOutlined, DeleteOutlined, SearchOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
+import { useRouter } from "@tanstack/react-router";
 import { useUsers } from "./hooks/useUsers";
 import type { IUser, UserRole, AccountStatus } from "./types";
-import { UserRole as UserRoleEnum, AccountStatus as AccountStatusEnum } from "./types";
+import {
+  UserRole as UserRoleEnum,
+  AccountStatus as AccountStatusEnum,
+} from "./types";
 import { formatDate } from "@/lib/utils";
 import { userService } from "./services/user.service";
 import "./user.scss";
@@ -36,8 +42,6 @@ const getRoleColor = (role: UserRole): string => {
       return "red";
     case UserRoleEnum.PUBLISHER:
       return "blue";
-    case UserRoleEnum.MODERATOR:
-      return "orange";
     case UserRoleEnum.USER:
     default:
       return "default";
@@ -76,8 +80,6 @@ const getRoleText = (role: UserRole): string => {
       return "Quản trị viên";
     case UserRoleEnum.PUBLISHER:
       return "Nhà xuất bản";
-    case UserRoleEnum.MODERATOR:
-      return "Điều hành viên";
     case UserRoleEnum.USER:
     default:
       return "Người dùng";
@@ -85,16 +87,22 @@ const getRoleText = (role: UserRole): string => {
 };
 
 export default function UserPage() {
-  const { users, loading, pagination, updateFilters, handlePageChange, refetch } =
-    useUsers();
+  const {
+    users,
+    loading,
+    pagination,
+    updateFilters,
+    handlePageChange,
+    refetch,
+  } = useUsers();
   const [searchText, setSearchText] = useState("");
   const [selectedRole, setSelectedRole] = useState<UserRole | undefined>();
-  const [selectedStatus, setSelectedStatus] = useState<AccountStatus | undefined>();
-  const [editModalVisible, setEditModalVisible] = useState(false);
-  const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<
+    AccountStatus | undefined
+  >();
+  const [banModalVisible, setBanModalVisible] = useState(false);
   const [selectedUser, setSelectedUser] = useState<IUser | null>(null);
-  const [form] = Form.useForm();
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const router = useRouter();
 
   const handleSearch = () => {
     updateFilters({
@@ -118,62 +126,37 @@ export default function UserPage() {
   };
 
   const handleEdit = (user: IUser) => {
-    setSelectedUser(user);
-    form.setFieldsValue({
-      username: user.username,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    void (router as any).navigate({
+      to: "/user/$id",
+      params: { id: user.id },
     });
-    setUploadFile(null);
-    setEditModalVisible(true);
   };
 
-  const handleDelete = (user: IUser) => {
+  const handleBan = (user: IUser) => {
     setSelectedUser(user);
-    setDeleteModalVisible(true);
+    setBanModalVisible(true);
   };
 
-  const handleEditSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-      if (!selectedUser) return;
-
-      const response = await userService.updateUser(selectedUser.id, {
-        username: values.username,
-        avatar: uploadFile || undefined,
-      });
-
-      if (response.success) {
-        message.success("Cập nhật người dùng thành công!");
-        setEditModalVisible(false);
-        setSelectedUser(null);
-        form.resetFields();
-        setUploadFile(null);
-        void refetch();
-      } else {
-        message.error(response.message || "Cập nhật người dùng thất bại!");
-      }
-    } catch (error) {
-      console.error("Error updating user:", error);
-      message.error("Có lỗi xảy ra khi cập nhật người dùng!");
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
+  const handleBanConfirm = async () => {
     if (!selectedUser) return;
 
     try {
-      const response = await userService.deleteUser(selectedUser.id);
+      const response = await userService.banUser(selectedUser.id);
 
       if (response.success) {
-        message.success("Xóa người dùng thành công!");
-        setDeleteModalVisible(false);
+        message.success(
+          response.message || "Đã chuyển người dùng sang trạng thái khóa."
+        );
+        setBanModalVisible(false);
         setSelectedUser(null);
         void refetch();
       } else {
-        message.error(response.message || "Xóa người dùng thất bại!");
+        message.error(response.message || "Khoá người dùng thất bại!");
       }
     } catch (error) {
-      console.error("Error deleting user:", error);
-      message.error("Có lỗi xảy ra khi xóa người dùng!");
+      console.error("Error banning user:", error);
+      message.error("Có lỗi xảy ra khi khoá người dùng!");
     }
   };
 
@@ -231,27 +214,6 @@ export default function UserPage() {
       ),
     },
     {
-      title: "Thiết bị hoạt động",
-      dataIndex: "activeDevices",
-      width: 120,
-      align: "center",
-      render: (devices: number) => <Text>{devices}</Text>,
-    },
-    {
-      title: "Nhà cung cấp",
-      key: "provider",
-      width: 120,
-      render: (_: unknown, record: IUser) => {
-        if (record.googleID) {
-          return <Tag color="blue">Google</Tag>;
-        }
-        if (record.facebookID) {
-          return <Tag color="blue">Facebook</Tag>;
-        }
-        return <Text type="secondary">-</Text>;
-      },
-    },
-    {
       title: "Ngày tạo",
       dataIndex: "createdAt",
       width: 120,
@@ -271,12 +233,12 @@ export default function UserPage() {
               onClick={() => handleEdit(record)}
             />
           </Tooltip>
-          <Tooltip title="Xóa">
+          <Tooltip title="Khóa tài khoản">
             <Button
               type="text"
               danger
               icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record)}
+              onClick={() => handleBan(record)}
             />
           </Tooltip>
         </Space>
@@ -290,9 +252,7 @@ export default function UserPage() {
         <Title level={2} style={{ margin: 0 }}>
           Người dùng
         </Title>
-        <Text type="secondary">
-          Quản lý danh sách người dùng và vai trò.
-        </Text>
+        <Text type="secondary">Quản lý danh sách người dùng và vai trò.</Text>
       </div>
       <Card>
         <Space direction="vertical" size="middle" style={{ width: "100%" }}>
@@ -316,7 +276,6 @@ export default function UserPage() {
               <Option value={UserRoleEnum.USER}>Người dùng</Option>
               <Option value={UserRoleEnum.ADMIN}>Quản trị viên</Option>
               <Option value={UserRoleEnum.PUBLISHER}>Nhà xuất bản</Option>
-              <Option value={UserRoleEnum.MODERATOR}>Điều hành viên</Option>
             </Select>
             <Select
               placeholder="Chọn trạng thái"
@@ -325,7 +284,9 @@ export default function UserPage() {
               allowClear
               style={{ width: 150 }}
             >
-              <Option value={AccountStatusEnum.NOT_VERIFY}>Chưa xác thực</Option>
+              <Option value={AccountStatusEnum.NOT_VERIFY}>
+                Chưa xác thực
+              </Option>
               <Option value={AccountStatusEnum.VERIFIED}>Đã xác thực</Option>
               <Option value={AccountStatusEnum.BANNED}>Đã khóa</Option>
             </Select>
@@ -353,87 +314,23 @@ export default function UserPage() {
         </Space>
       </Card>
 
-      {/* Edit Modal */}
+      {/* Ban Modal */}
       <Modal
-        title="Chỉnh sửa người dùng"
-        open={editModalVisible}
-        onOk={handleEditSubmit}
+        title="Khóa tài khoản người dùng"
+        open={banModalVisible}
+        onOk={handleBanConfirm}
         onCancel={() => {
-          setEditModalVisible(false);
-          setSelectedUser(null);
-          form.resetFields();
-          setUploadFile(null);
-        }}
-        okText="Cập nhật"
-        cancelText="Hủy"
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="Tên người dùng"
-            name="username"
-            rules={[
-              { required: true, message: "Vui lòng nhập tên người dùng!" },
-              { min: 3, message: "Tên người dùng phải có ít nhất 3 ký tự!" },
-            ]}
-          >
-            <Input placeholder="Nhập tên người dùng" />
-          </Form.Item>
-          <Form.Item label="Ảnh đại diện" name="avatar">
-            <Upload
-              beforeUpload={(file) => {
-                setUploadFile(file);
-                return false;
-              }}
-              onRemove={() => {
-                setUploadFile(null);
-              }}
-              maxCount={1}
-              listType="picture-card"
-              fileList={
-                uploadFile
-                  ? [
-                      {
-                        uid: "-1",
-                        name: uploadFile.name,
-                        status: "done",
-                        url: URL.createObjectURL(uploadFile),
-                      },
-                    ]
-                  : selectedUser?.avatar
-                    ? [
-                        {
-                          uid: "-2",
-                          name: "current-avatar",
-                          status: "done",
-                          url: selectedUser.avatar,
-                        },
-                      ]
-                    : []
-              }
-            >
-              {(!uploadFile && !selectedUser?.avatar) && "+ Tải lên"}
-            </Upload>
-          </Form.Item>
-        </Form>
-      </Modal>
-
-      {/* Delete Modal */}
-      <Modal
-        title="Xác nhận xóa"
-        open={deleteModalVisible}
-        onOk={handleDeleteConfirm}
-        onCancel={() => {
-          setDeleteModalVisible(false);
+          setBanModalVisible(false);
           setSelectedUser(null);
         }}
-        okText="Xóa"
+        okText="Khóa"
         cancelText="Hủy"
         okButtonProps={{ danger: true }}
       >
         <p>
-          Bạn có chắc chắn muốn xóa người dùng{" "}
-          <strong>{selectedUser?.username}</strong> không? Hành động này không
-          thể hoàn tác.
+          Bạn có chắc chắn muốn chuyển người dùng{" "}
+          <strong>{selectedUser?.username}</strong> sang trạng thái khóa? Hành
+          động này sẽ ngăn họ truy cập hệ thống cho tới khi được mở khóa lại.
         </p>
       </Modal>
     </div>

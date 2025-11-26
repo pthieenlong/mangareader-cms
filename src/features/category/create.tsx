@@ -1,19 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
-import {
-  Button,
-  Card,
-  Form,
-  Input,
-  Typography,
-  Upload,
-  message,
-} from "antd";
+import { Button, Card, Form, Input, Typography, Upload, message } from "antd";
 import type { UploadFile } from "antd";
 import { ArrowLeftOutlined, PlusOutlined } from "@ant-design/icons";
 import { categoryService } from "./services/category.service";
 import type { CreateCategoryPayload } from "./types";
-import { generateSlug } from "@/lib/utils";
 import "./category.scss";
 
 const { Title, Text } = Typography;
@@ -49,7 +40,7 @@ export default function CreateCategoryPage() {
     : [];
 
   const handleNavigateBack = () => {
-    navigate({ to: "/categories" });
+    navigate({ to: "/categories" } as never);
   };
 
   const handleFinish = async (values: CategoryFormValues) => {
@@ -57,7 +48,6 @@ export default function CreateCategoryPage() {
     try {
       const payload: CreateCategoryPayload = {
         title: values.title.trim(),
-        slug: generateSlug(values.title),
         description: values.description?.trim()
           ? values.description.trim()
           : undefined,
@@ -68,7 +58,7 @@ export default function CreateCategoryPage() {
       const response = await categoryService.createCategory(payload);
       if (response.success) {
         message.success("Tạo danh mục thành công!");
-        navigate({ to: "/categories" });
+        navigate({ to: "/categories" } as never);
       } else {
         message.error(
           response.message || "Không thể tạo danh mục, vui lòng thử lại."
@@ -192,4 +182,3 @@ export default function CreateCategoryPage() {
     </div>
   );
 }
-

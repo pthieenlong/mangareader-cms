@@ -9,16 +9,10 @@ import {
   Tag,
   Input,
   Select,
-  Modal,
-  Form,
-  message,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
-import {
-  CloseCircleOutlined,
-  SearchOutlined,
-  EyeOutlined,
-} from "@ant-design/icons";
+import { SearchOutlined, EyeOutlined } from "@ant-design/icons";
+import { useRouter } from "@tanstack/react-router";
 import { useOrders } from "./hooks/useOrders";
 import type { IOrder, OrderStatus, PayingMethod } from "./types";
 import {
@@ -26,74 +20,15 @@ import {
   PayingMethod as PayingMethodEnum,
 } from "./types";
 import { formatDate, formatCurrency } from "@/lib/utils";
-import { orderService } from "./services/order.service";
+import { getStatusColor, getStatusText } from "./utils";
 import "./order.scss";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
-const { TextArea } = Input;
-
-const getStatusColor = (status: OrderStatus): string => {
-  switch (status) {
-    case OrderStatusEnum.COMPLETED:
-    case OrderStatusEnum.PAID:
-      return "success";
-    case OrderStatusEnum.PENDING:
-      return "warning";
-    case OrderStatusEnum.CANCELLED:
-    case OrderStatusEnum.FAILED:
-    case OrderStatusEnum.ERROR:
-      return "error";
-    case OrderStatusEnum.REFUNDED:
-      return "default";
-    default:
-      return "default";
-  }
-};
-
-const getStatusText = (status: OrderStatus): string => {
-  switch (status) {
-    case OrderStatusEnum.PENDING:
-      return "Đang chờ";
-    case OrderStatusEnum.COMPLETED:
-      return "Hoàn thành";
-    case OrderStatusEnum.PAID:
-      return "Đã thanh toán";
-    case OrderStatusEnum.CANCELLED:
-      return "Đã hủy";
-    case OrderStatusEnum.REFUNDED:
-      return "Đã hoàn tiền";
-    case OrderStatusEnum.FAILED:
-      return "Thất bại";
-    case OrderStatusEnum.ERROR:
-      return "Lỗi";
-    default:
-      return status;
-  }
-};
-
-const getPayingMethodText = (method: PayingMethod): string => {
-  switch (method) {
-    case PayingMethodEnum.BANK_TRANSFER:
-      return "Chuyển khoản";
-    case PayingMethodEnum.CREDIT_CARD:
-      return "Thẻ tín dụng";
-    case PayingMethodEnum.E_WALLET:
-      return "Ví điện tử";
-    default:
-      return method;
-  }
-};
 
 export default function OrderPage() {
-  const {
-    orders,
-    loading,
-    pagination,
-    updateFilters,
-    handlePageChange,
-    refetch,
-  } = useOrders();
+  const { orders, loading, pagination, updateFilters, handlePageChange } =
+    useOrders();
   const [searchText, setSearchText] = useState("");
   const [selectedStatus, setSelectedStatus] = useState<
     OrderStatus | undefined
@@ -101,10 +36,7 @@ export default function OrderPage() {
   const [selectedPayingMethod, setSelectedPayingMethod] = useState<
     PayingMethod | undefined
   >();
-  const [cancelModalVisible, setCancelModalVisible] = useState(false);
-  const [detailModalVisible, setDetailModalVisible] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
-  const [form] = Form.useForm();
+  const router = useRouter();
 
   const handleSearch = () => {
     updateFilters({
@@ -128,39 +60,18 @@ export default function OrderPage() {
   };
 
   const handleViewDetail = (order: IOrder) => {
-    setSelectedOrder(order);
-    setDetailModalVisible(true);
-  };
-
-  const handleCancel = (order: IOrder) => {
-    setSelectedOrder(order);
-    form.resetFields();
-    setCancelModalVisible(true);
-  };
-
-  const handleCancelSubmit = async () => {
-    try {
-      const values = await form.validateFields();
-      if (!selectedOrder) return;
-
-      const response = await orderService.cancelOrder(
-        selectedOrder.id,
-        values.reason
-      );
-
-      if (response.success) {
-        message.success("Hủy đơn hàng thành công!");
-        setCancelModalVisible(false);
-        setSelectedOrder(null);
-        form.resetFields();
-        void refetch();
-      } else {
-        message.error(response.message || "Hủy đơn hàng thất bại!");
-      }
-    } catch (error) {
-      console.error("Error canceling order:", error);
-      message.error("Có lỗi xảy ra khi hủy đơn hàng!");
+    if (!order.userId) {
+      // message.warning("Thiếu thông tin người dùng cho đơn hàng này.");
+      return;
     }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    void (router as any).navigate({
+      to: "/order/$userId/$orderId",
+      params: {
+        userId: order.userId,
+        orderId: order.id,
+      },
+    });
   };
 
   const columns: ColumnsType<IOrder> = [
@@ -219,28 +130,11 @@ export default function OrderPage() {
       ),
     },
     {
-      title: "Phương thức thanh toán",
-      dataIndex: "payingMethod",
-      key: "payingMethod",
-      width: 150,
-      render: (method: PayingMethod) => (
-        <Tag>{getPayingMethodText(method)}</Tag>
-      ),
-    },
-    {
       title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
       width: 120,
       render: (date: string | undefined) => (date ? formatDate(date) : "-"),
-    },
-    {
-      title: "Ngày thanh toán",
-      dataIndex: "paidAt",
-      key: "paidAt",
-      width: 120,
-      render: (date: string | null | undefined) =>
-        date ? formatDate(date) : "-",
     },
     {
       title: "Hành động",
@@ -256,16 +150,6 @@ export default function OrderPage() {
               onClick={() => handleViewDetail(record)}
             />
           </Tooltip>
-          {record.status === OrderStatusEnum.PENDING && (
-            <Tooltip title="Hủy đơn hàng">
-              <Button
-                type="text"
-                danger
-                icon={<CloseCircleOutlined />}
-                onClick={() => handleCancel(record)}
-              />
-            </Tooltip>
-          )}
         </Space>
       ),
     },
@@ -342,165 +226,6 @@ export default function OrderPage() {
           />
         </Space>
       </Card>
-
-      {/* Detail Modal */}
-      <Modal
-        title="Chi tiết đơn hàng"
-        open={detailModalVisible}
-        onCancel={() => {
-          setDetailModalVisible(false);
-          setSelectedOrder(null);
-        }}
-        footer={[
-          <Button
-            key="close"
-            onClick={() => {
-              setDetailModalVisible(false);
-              setSelectedOrder(null);
-            }}
-          >
-            Đóng
-          </Button>,
-        ]}
-        width={800}
-      >
-        {selectedOrder && (
-          <Space direction="vertical" size="large" style={{ width: "100%" }}>
-            <div>
-              <Text strong>Mã đơn hàng: </Text>
-              <Text code>{selectedOrder.id}</Text>
-            </div>
-            <div>
-              <Text strong>Người dùng: </Text>
-              <Text>
-                {selectedOrder.user?.username || selectedOrder.userId}
-              </Text>
-              {selectedOrder.user?.email && (
-                <>
-                  <br />
-                  <Text type="secondary">{selectedOrder.user.email}</Text>
-                </>
-              )}
-            </div>
-            <div>
-              <Text strong>Tổng tiền: </Text>
-              <Text strong style={{ color: "#1890ff", fontSize: "16px" }}>
-                {formatCurrency(selectedOrder.totalAmount)}
-              </Text>
-            </div>
-            <div>
-              <Text strong>Trạng thái: </Text>
-              <Tag color={getStatusColor(selectedOrder.status)}>
-                {getStatusText(selectedOrder.status)}
-              </Tag>
-            </div>
-            <div>
-              <Text strong>Phương thức thanh toán: </Text>
-              <Tag>{getPayingMethodText(selectedOrder.payingMethod)}</Tag>
-            </div>
-            <div>
-              <Text strong>Ngày tạo: </Text>
-              <Text>
-                {selectedOrder.createdAt
-                  ? formatDate(selectedOrder.createdAt)
-                  : "-"}
-              </Text>
-            </div>
-            {selectedOrder.paidAt && (
-              <div>
-                <Text strong>Ngày thanh toán: </Text>
-                <Text>{formatDate(selectedOrder.paidAt)}</Text>
-              </div>
-            )}
-            {selectedOrder.orderItems &&
-              selectedOrder.orderItems.length > 0 && (
-                <div>
-                  <Text strong>Chi tiết đơn hàng:</Text>
-                  <Table
-                    dataSource={selectedOrder.orderItems}
-                    rowKey="id"
-                    pagination={false}
-                    size="small"
-                    columns={[
-                      {
-                        title: "Sách/Chương",
-                        key: "item",
-                        render: (_: unknown, item) => (
-                          <Text>
-                            {item.bookId
-                              ? `Sách: ${item.bookId.slice(0, 8)}...`
-                              : ""}
-                            {item.chapterId
-                              ? `Chương: ${item.chapterId.slice(0, 8)}...`
-                              : ""}
-                          </Text>
-                        ),
-                      },
-                      {
-                        title: "Giá gốc",
-                        dataIndex: "defaultPrice",
-                        align: "right",
-                        render: (price: number) => formatCurrency(price),
-                      },
-                      {
-                        title: "Giảm giá",
-                        dataIndex: "discountPrice",
-                        align: "right",
-                        render: (price: number) => formatCurrency(price),
-                      },
-                      {
-                        title: "Đã đọc",
-                        dataIndex: "isRead",
-                        render: (isRead: boolean) => (
-                          <Tag color={isRead ? "success" : "default"}>
-                            {isRead ? "Đã đọc" : "Chưa đọc"}
-                          </Tag>
-                        ),
-                      },
-                    ]}
-                  />
-                </div>
-              )}
-          </Space>
-        )}
-      </Modal>
-
-      {/* Cancel Modal */}
-      <Modal
-        title="Hủy đơn hàng"
-        open={cancelModalVisible}
-        onOk={handleCancelSubmit}
-        onCancel={() => {
-          setCancelModalVisible(false);
-          setSelectedOrder(null);
-          form.resetFields();
-        }}
-        okText="Xác nhận hủy"
-        cancelText="Hủy"
-        okButtonProps={{ danger: true }}
-      >
-        <Form form={form} layout="vertical">
-          <Form.Item
-            label="Lý do hủy đơn hàng"
-            name="reason"
-            rules={[
-              { required: true, message: "Vui lòng nhập lý do hủy đơn hàng!" },
-            ]}
-          >
-            <TextArea placeholder="Nhập lý do hủy đơn hàng..." rows={4} />
-          </Form.Item>
-          {selectedOrder && (
-            <div style={{ marginTop: 16 }}>
-              <Text type="secondary">
-                Bạn đang hủy đơn hàng{" "}
-                <Text code>{selectedOrder.id.slice(0, 8)}...</Text> với tổng
-                tiền{" "}
-                <Text strong>{formatCurrency(selectedOrder.totalAmount)}</Text>
-              </Text>
-            </div>
-          )}
-        </Form>
-      </Modal>
     </div>
   );
 }

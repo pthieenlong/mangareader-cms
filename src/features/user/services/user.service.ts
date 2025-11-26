@@ -19,13 +19,16 @@ export const userService = {
 
   async updateUser(
     id: string,
-    payload: { username?: string; avatar?: File }
+    payload: {
+      username?: string;
+      avatar?: File;
+    }
   ): Promise<CustomResponse> {
     const formData = new FormData();
     if (payload.username) {
       formData.append("username", payload.username);
     }
-    if (payload.avatar) {
+    if (payload.avatar && payload.avatar instanceof File) {
       formData.append("avatar", payload.avatar);
     }
 
@@ -47,5 +50,18 @@ export const userService = {
     );
     return response.data;
   },
-};
 
+  async banUser(id: string): Promise<CustomResponse> {
+    const response = await axiosInstance.patch<CustomResponse>(
+      `/admin/user/${id}/ban`
+    );
+    return response.data;
+  },
+
+  async unbanUser(id: string): Promise<CustomResponse> {
+    const response = await axiosInstance.patch<CustomResponse>(
+      `/admin/user/${id}/unban`
+    );
+    return response.data;
+  },
+};

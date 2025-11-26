@@ -22,13 +22,11 @@ const { TextArea } = Input;
 type CategoryFormValues = {
   title: string;
   description?: string;
-  thumbnail?: string;
 };
 
 const EMPTY_VALUES: CategoryFormValues = {
   title: "",
   description: "",
-  thumbnail: "",
 };
 
 export default function EditCategoryPage() {
@@ -38,20 +36,23 @@ export default function EditCategoryPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
+  const [initialThumbnailUrl, setInitialThumbnailUrl] = useState<string>("");
   const [initialValues, setInitialValues] = useState<CategoryFormValues | null>(
     null
   );
 
-  const uploadFileList: UploadFile[] = thumbnailPreview
-    ? [
-        {
-          uid: "-1",
-          name: "category-thumbnail",
-          status: "done",
-          url: thumbnailPreview,
-        },
-      ]
-    : [];
+  const uploadFileList: UploadFile[] =
+    thumbnailPreview || initialThumbnailUrl
+      ? [
+          {
+            uid: "-1",
+            name: "category-thumbnail",
+            status: "done",
+            url: thumbnailPreview || initialThumbnailUrl,
+          },
+        ]
+      : [];
 
   useEffect(() => {
     const fetchCategory = async () => {
@@ -60,13 +61,16 @@ export default function EditCategoryPage() {
         const response = await categoryService.getCategoryBySlug(slug);
         if (response.success && response.data) {
           const data = response.data as ICategory;
+          const thumbnailUrl = data.thumbnail
+            ? `https://cdn.mangareader.io.vn/${data.thumbnail}`
+            : "";
           const mappedValues: CategoryFormValues = {
             title: data.title ?? "",
             description: data.description ?? "",
-            thumbnail: data.thumbnail ?? "",
           };
           setInitialValues(mappedValues);
-          setThumbnailPreview(mappedValues.thumbnail ?? "");
+          setInitialThumbnailUrl(thumbnailUrl);
+          setThumbnailPreview(thumbnailUrl);
           form.setFieldsValue(mappedValues);
         } else {
           const errorMsg =
@@ -98,11 +102,13 @@ export default function EditCategoryPage() {
       void message.error("Ảnh phải nhỏ hơn 5MB.");
       return Upload.LIST_IGNORE;
     }
+    // Save File object
+    setThumbnailFile(file);
+    // Create preview for display
     const reader = new FileReader();
     reader.onload = (e) => {
       const result = e.target?.result as string;
       setThumbnailPreview(result);
-      form.setFieldValue("thumbnail", result);
     };
     reader.readAsDataURL(file);
     return false;
@@ -110,7 +116,11 @@ export default function EditCategoryPage() {
 
   const handleRemoveThumbnail = () => {
     setThumbnailPreview("");
-    form.setFieldValue("thumbnail", "");
+    setThumbnailFile(null);
+    // Reset to initial thumbnail if exists
+    if (initialThumbnailUrl) {
+      setThumbnailPreview(initialThumbnailUrl);
+    }
   };
 
   const handleNavigateBack = () => {
@@ -120,15 +130,20 @@ export default function EditCategoryPage() {
   const handleFinish = async (values: CategoryFormValues) => {
     setSubmitting(true);
     try {
-      const payload = {
-        title: values.title.trim(),
+      const payload: {
+        description?: string;
+        thumbnail?: File;
+      } = {
         description: values.description?.trim()
           ? values.description.trim()
           : undefined,
-        thumbnail: values.thumbnail?.trim()
-          ? values.thumbnail.trim()
-          : undefined,
       };
+
+      // Only include thumbnail if a new file was uploaded
+      if (thumbnailFile) {
+        payload.thumbnail = thumbnailFile;
+      }
+
       const response = await categoryService.updateCategory(slug, payload);
       if (response.success) {
         message.success("Cập nhật danh mục thành công!");
@@ -208,17 +223,12 @@ export default function EditCategoryPage() {
             <Text type="secondary">
               Ảnh vuông, dung lượng tối đa 5MB. Có thể bỏ trống.
             </Text>
-            <Form.Item name="thumbnail" hidden>
-              <Input />
-            </Form.Item>
           </Form.Item>
 
           <Form.Item
             label="Mô tả"
             name="description"
-            rules={[
-              { max: 500, message: "Mô tả tối đa 500 ký tự" },
-            ]}
+            rules={[{ max: 500, message: "Mô tả tối đa 500 ký tự" }]}
           >
             <TextArea rows={4} placeholder="Mô tả ngắn về danh mục" />
           </Form.Item>
@@ -234,5 +244,3 @@ export default function EditCategoryPage() {
     </div>
   );
 }
-
-

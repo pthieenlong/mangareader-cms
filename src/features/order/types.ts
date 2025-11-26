@@ -14,11 +14,27 @@ export enum PayingMethod {
   E_WALLET = "E_WALLET",
 }
 
+export interface IOrderBookDetail {
+  id: string;
+  title: string;
+  slug?: string;
+  thumbnail?: string | null;
+}
+
+export interface IOrderChapterDetail {
+  id: string;
+  title: string;
+  slug?: string;
+  chapterNumber?: number;
+}
+
 export interface IOrderItem {
   id: string;
   ordersId: string;
   bookId?: string | null;
   chapterId?: string | null;
+  book?: IOrderBookDetail | null;
+  chapter?: IOrderChapterDetail | null;
   defaultPrice: number;
   discountPrice: number;
   isRead: boolean;
@@ -51,4 +67,3 @@ export interface IOrderListParams {
   sortOrder?: "asc" | "desc";
   search?: string;
 }
-

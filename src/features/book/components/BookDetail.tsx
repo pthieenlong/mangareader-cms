@@ -1,8 +1,34 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeftOutlined, DeleteOutlined, EditOutlined, EyeOutlined } from "@ant-design/icons";
-import { Avatar, Button, Card, Col, Descriptions, Divider, Image, List, Row, Space, Statistic, Tag, Typography } from "antd";
+import {
+  ArrowLeftOutlined,
+  CheckCircleOutlined,
+  EyeOutlined,
+  InboxOutlined,
+  StopOutlined,
+} from "@ant-design/icons";
+import {
+  Avatar,
+  Button,
+  Card,
+  Col,
+  Descriptions,
+  Divider,
+  Image,
+  Input,
+  List,
+  Modal,
+  Row,
+  Space,
+  Statistic,
+  Tag,
+  Typography,
+} from "antd";
 import type { DescriptionsItemType } from "antd/es/descriptions";
-import type { IBookDetail, IBookCategoryRelation, IChapterSummary } from "../types";
+import type {
+  IBookDetail,
+  IBookCategoryRelation,
+  IChapterSummary,
+} from "../types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import "./BookDetail.scss";
 
@@ -35,9 +61,14 @@ const chapterStatusLabelMap: Record<string, string> = {
 export interface BookDetailProps {
   book: IBookDetail;
   onBack: () => void;
-  onEdit?: (book: IBookDetail) => void;
-  onDelete?: (book: IBookDetail) => void;
   onChapterDetail?: (chapter: IChapterSummary) => void;
+  onPublish?: (payload?: { notes?: string }) => Promise<void> | void;
+  onReject?: (payload: {
+    reason: string;
+    notes?: string;
+  }) => Promise<void> | void;
+  onArchive?: (payload?: { notes?: string }) => Promise<void> | void;
+  actionLoading?: boolean;
 }
 
 const getCategories = (bookCategories?: IBookCategoryRelation[]) =>
@@ -108,10 +139,23 @@ const buildMetaItems = (book: IBookDetail): DescriptionsItemType[] => [
   },
 ];
 
-export function BookDetail({ book, onBack, onEdit, onDelete, onChapterDetail }: BookDetailProps) {
+export function BookDetail({
+  book,
+  onBack,
+  onChapterDetail,
+  onPublish,
+  onReject,
+  onArchive,
+  actionLoading = false,
+}: BookDetailProps) {
   const categories = getCategories(book.bookCategories);
   const [chapterPage, setChapterPage] = useState(1);
   const [chapterPageSize, setChapterPageSize] = useState(10);
+  const [modalType, setModalType] = useState<
+    "publish" | "reject" | "archive" | null
+  >(null);
+  const [notes, setNotes] = useState("");
+  const [rejectReason, setRejectReason] = useState("");
 
   useEffect(() => {
     setChapterPage(1);
@@ -136,7 +180,7 @@ export function BookDetail({ book, onBack, onEdit, onDelete, onChapterDetail }: 
           icon={<EyeOutlined />}
           onClick={() => onChapterDetail?.(chapter)}
         >
-          Quản lý chương
+          Xem chương
         </Button>,
       ]}
     >
@@ -155,7 +199,9 @@ export function BookDetail({ book, onBack, onEdit, onDelete, onChapterDetail }: 
           <Space split={<Divider type="vertical" />} wrap>
             <Text type="secondary">Slug: {chapter.slug}</Text>
             <Text type="secondary">Tạo: {formatDate(chapter.createdAt)}</Text>
-            <Text type="secondary">Cập nhật: {formatDate(chapter.updatedAt)}</Text>
+            <Text type="secondary">
+              Cập nhật: {formatDate(chapter.updatedAt)}
+            </Text>
           </Space>
         }
       />
@@ -174,11 +220,38 @@ export function BookDetail({ book, onBack, onEdit, onDelete, onChapterDetail }: 
           </Title>
         </Space>
         <Space>
-          <Button icon={<EditOutlined />} onClick={() => onEdit?.(book)}>
-            Chỉnh sửa
+          <Button
+            type="primary"
+            icon={<CheckCircleOutlined />}
+            disabled={book.status !== "PENDING"}
+            onClick={() => {
+              setModalType("publish");
+              setNotes("");
+            }}
+          >
+            Duyệt & xuất bản
           </Button>
-          <Button danger icon={<DeleteOutlined />} onClick={() => onDelete?.(book)}>
-            Xóa truyện
+          <Button
+            danger
+            icon={<StopOutlined />}
+            disabled={book.status !== "PENDING"}
+            onClick={() => {
+              setModalType("reject");
+              setRejectReason("");
+              setNotes("");
+            }}
+          >
+            Từ chối
+          </Button>
+          <Button
+            icon={<InboxOutlined />}
+            onClick={() => {
+              setModalType("archive");
+              setNotes("");
+            }}
+            disabled={book.status === "ARCHIVED"}
+          >
+            Lưu trữ
           </Button>
         </Space>
       </div>
@@ -209,7 +282,9 @@ export function BookDetail({ book, onBack, onEdit, onDelete, onChapterDetail }: 
               <div className="book-detail__categories">
                 <Text type="secondary">Thể loại:</Text>
                 {categories.length ? (
-                  categories.map((category) => <Tag key={category.id}>{category.title}</Tag>)
+                  categories.map((category) => (
+                    <Tag key={category.id}>{category.title}</Tag>
+                  ))
                 ) : (
                   <Tag>Chưa phân loại</Tag>
                 )}
@@ -265,7 +340,11 @@ export function BookDetail({ book, onBack, onEdit, onDelete, onChapterDetail }: 
         </Col>
       </Row>
 
-      <Card title="Mô tả truyện" className="book-detail__section" bordered={false}>
+      <Card
+        title="Mô tả truyện"
+        className="book-detail__section"
+        bordered={false}
+      >
         <Paragraph style={{ whiteSpace: "pre-wrap" }}>
           {book.description || "Chưa có mô tả cho truyện này."}
         </Paragraph>
@@ -275,11 +354,7 @@ export function BookDetail({ book, onBack, onEdit, onDelete, onChapterDetail }: 
         title="Danh sách chương"
         className="book-detail__section"
         bordered={false}
-        extra={
-          <Tag color="geekblue">
-            {totalChapters} chương
-          </Tag>
-        }
+        extra={<Tag color="geekblue">{totalChapters} chương</Tag>}
       >
         <List
           dataSource={paginatedChapters}
@@ -309,8 +384,81 @@ export function BookDetail({ book, onBack, onEdit, onDelete, onChapterDetail }: 
           }
         />
       </Card>
+
+      <Modal
+        open={modalType !== null}
+        title={
+          modalType === "publish"
+            ? "Xác nhận xuất bản"
+            : modalType === "reject"
+            ? "Từ chối truyện"
+            : "Lưu trữ truyện"
+        }
+        onCancel={() => {
+          setModalType(null);
+          setNotes("");
+          setRejectReason("");
+        }}
+        onOk={async () => {
+          if (!modalType) {
+            return;
+          }
+          const trimmedNotes = notes.trim();
+          if (modalType === "publish") {
+            await onPublish?.({
+              notes: trimmedNotes ? trimmedNotes : undefined,
+            });
+          } else if (modalType === "reject") {
+            await onReject?.({
+              reason: rejectReason.trim(),
+              notes: trimmedNotes ? trimmedNotes : undefined,
+            });
+          } else if (modalType === "archive") {
+            await onArchive?.({
+              notes: trimmedNotes ? trimmedNotes : undefined,
+            });
+          }
+          setModalType(null);
+          setNotes("");
+          setRejectReason("");
+        }}
+        okText={
+          modalType === "publish"
+            ? "Xuất bản"
+            : modalType === "reject"
+            ? "Từ chối"
+            : "Lưu trữ"
+        }
+        okButtonProps={{
+          disabled: modalType === "reject" && !rejectReason.trim(),
+        }}
+        confirmLoading={actionLoading}
+      >
+        {modalType === "reject" ? (
+          <Space direction="vertical" style={{ width: "100%" }}>
+            <Input.TextArea
+              placeholder="Lý do từ chối *"
+              value={rejectReason}
+              onChange={(event) => setRejectReason(event.target.value)}
+              rows={3}
+              required
+            />
+            <Input.TextArea
+              placeholder="Ghi chú gửi Publisher (tùy chọn)"
+              value={notes}
+              onChange={(event) => setNotes(event.target.value)}
+              rows={3}
+            />
+          </Space>
+        ) : (
+          <Input.TextArea
+            placeholder="Ghi chú (tùy chọn)"
+            value={notes}
+            onChange={(event) => setNotes(event.target.value)}
+            rows={3}
+          />
+        )}
+      </Modal>
     </div>
   );
 }
-
-

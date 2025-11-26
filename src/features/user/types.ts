@@ -1,3 +1,5 @@
+import type { OrderStatus, PayingMethod } from "@/features/order/types";
+
 export enum UserRole {
   USER = "USER",
   ADMIN = "ADMIN",
@@ -35,3 +37,60 @@ export interface IUserListParams {
   status?: AccountStatus;
 }
 
+export interface IUserOverviewStats {
+  totalSpend: number;
+  purchasedCount: number;
+  favoriteCount: number;
+  readingCount: number;
+}
+
+export interface IPublisherOverviewStats {
+  totalRevenue: number;
+  publishedBookCount: number;
+}
+
+export interface IUserProfileDetail extends IUser {
+  phoneNumber?: string;
+  address?: string;
+  bio?: string;
+  lastActive?: string;
+  readingCount?: number;
+}
+
+export interface IUserOrderHistory {
+  id: string;
+  code: string;
+  createdAt: string;
+  status: OrderStatus;
+  totalAmount: number;
+  payingMethod: PayingMethod;
+}
+
+export interface IUserFavorite {
+  id: string;
+  title: string;
+  author?: string;
+  thumbnail?: string;
+  categories: string[];
+  purchasedAt?: string;
+}
+
+export interface IPublisherBook {
+  id: string;
+  title: string;
+  author?: string;
+  thumbnail?: string;
+  categories: string[];
+  status: string;
+  createdAt?: string;
+  view?: number;
+  likeCount?: number;
+}
+
+export interface IUserProfileUpdatePayload {
+  username?: string;
+  phoneNumber?: string;
+  address?: string;
+  bio?: string;
+  avatar?: File;
+}

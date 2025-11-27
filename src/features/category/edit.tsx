@@ -31,7 +31,7 @@ const EMPTY_VALUES: CategoryFormValues = {
 
 export default function EditCategoryPage() {
   const navigate = useNavigate();
-  const { slug } = useParams({ from: "/categories/$slug/edit" } as never);
+  const { slug } = useParams({ from: "/categories/$slug/edit" });
   const [form] = Form.useForm<CategoryFormValues>();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -76,13 +76,13 @@ export default function EditCategoryPage() {
           const errorMsg =
             response.message || "Không thể tải thông tin danh mục.";
           message.error(errorMsg);
-          navigate({ to: "/categories" } as never);
+          navigate({ to: "/categories" });
         }
       } catch (error) {
         message.error(
           (error as Error).message || "Có lỗi xảy ra khi tải danh mục."
         );
-        navigate({ to: "/categories" } as never);
+        navigate({ to: "/categories" });
       } finally {
         setLoading(false);
       }
@@ -124,7 +124,7 @@ export default function EditCategoryPage() {
   };
 
   const handleNavigateBack = () => {
-    navigate({ to: "/categories" } as never);
+    navigate({ to: "/categories" });
   };
 
   const handleFinish = async (values: CategoryFormValues) => {
@@ -147,7 +147,7 @@ export default function EditCategoryPage() {
       const response = await categoryService.updateCategory(slug, payload);
       if (response.success) {
         message.success("Cập nhật danh mục thành công!");
-        navigate({ to: "/categories" } as never);
+        navigate({ to: "/categories" });
       } else {
         message.error(
           response.message || "Không thể cập nhật danh mục, vui lòng thử lại."

@@ -1,0 +1,2 @@
+export { BookTable } from "./BookTable";
+

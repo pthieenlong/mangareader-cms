@@ -3,6 +3,7 @@ export type ChapterStatus = "PENDING" | "DRAFT" | "PUBLISHED" | "ARCHIVED";
 
 export interface IBookCategory {
   id: string;
+  slug: string;
   title: string;
 }
 
@@ -97,9 +98,14 @@ export interface IBookListParams {
   pageSize?: number;
   keyword?: string;
   category?: string;
-  categories?: string[];
   status?: BookStatus;
-  sort?: "latest" | "top_rated" | "most_viewed" | "price_asc" | "price_desc" | "free";
+  sort?:
+    | "latest"
+    | "top_rated"
+    | "most_viewed"
+    | "price_asc"
+    | "price_desc"
+    | "free";
 }
 
 export interface IChapterDetail extends IChapterSummary {
@@ -121,3 +127,20 @@ export interface IChapterFormValues {
   content?: string[];
 }
 
+// Book Overview Statistics
+export interface IBookOverviewStatistics {
+  totalBooks: number;
+  publishedBooks: number;
+  pendingBooks: number;
+  freeBooks: number;
+}
+
+// Extended Book List Params with new filters
+export interface IBookListFilters extends IBookListParams {
+  priceMin?: number;
+  priceMax?: number;
+  createdFrom?: string;
+  createdTo?: string;
+  updatedFrom?: string;
+  updatedTo?: string;
+}

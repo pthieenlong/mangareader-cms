@@ -1,0 +1,23 @@
+.price-tag {
+  &--free {
+    font-weight: 500;
+  }
+
+  &--sale {
+    .price-tag__original {
+      font-size: 12px;
+    }
+
+    .price-tag__sale {
+      font-size: 14px;
+    }
+
+    .price-tag__percent {
+      font-size: 11px;
+    }
+  }
+
+  &--regular {
+    font-size: 14px;
+  }
+}

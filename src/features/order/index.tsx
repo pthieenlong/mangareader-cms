@@ -19,8 +19,13 @@ import {
   OrderStatus as OrderStatusEnum,
   PayingMethod as PayingMethodEnum,
 } from "./types";
-import { formatDate, formatCurrency } from "@/lib/utils";
-import { getStatusColor, getStatusText } from "./utils";
+import {
+  formatDate,
+  formatCurrency,
+  getOrderStatusColor,
+  getOrderStatusText,
+  getPayingMethodText,
+} from "@/utils";
 import "./order.scss";
 
 const { Title, Text } = Typography;
@@ -126,7 +131,18 @@ export default function OrderPage() {
       key: "status",
       width: 120,
       render: (status: OrderStatus) => (
-        <Tag color={getStatusColor(status)}>{getStatusText(status)}</Tag>
+        <Tag color={getOrderStatusColor(status)}>
+          {getOrderStatusText(status)}
+        </Tag>
+      ),
+    },
+    {
+      title: "Phương thức thanh toán",
+      dataIndex: "payingMethod",
+      key: "payingMethod",
+      width: 150,
+      render: (method: PayingMethod) => (
+        <Tag>{getPayingMethodText(method)}</Tag>
       ),
     },
     {
@@ -135,6 +151,14 @@ export default function OrderPage() {
       key: "createdAt",
       width: 120,
       render: (date: string | undefined) => (date ? formatDate(date) : "-"),
+    },
+    {
+      title: "Ngày thanh toán",
+      dataIndex: "paidAt",
+      key: "paidAt",
+      width: 120,
+      render: (date: string | null | undefined) =>
+        date ? formatDate(date) : "-",
     },
     {
       title: "Hành động",

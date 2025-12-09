@@ -73,29 +73,3 @@
     padding: 16px;
   }
 }
-
-.actions-card {
-  .ant-btn {
-    justify-content: flex-start;
-  }
-}
-
-.book-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  gap: 8px;
-}
-
-.notification-item {
-  width: 100%;
-  background-color: rgba($muted-color, 0.4);
-  border: 1px solid $border-color;
-}
-
-.tasks-card {
-  .ant-list-item {
-    padding: 8px 0;
-  }
-}

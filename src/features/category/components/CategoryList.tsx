@@ -3,7 +3,8 @@ import {
   SearchOutlined,
   EyeOutlined,
   PlusOutlined,
-  DeleteOutlined,
+  CheckCircleOutlined,
+  StopOutlined,
   ExclamationCircleOutlined,
 } from "@ant-design/icons";
 import {
@@ -21,21 +22,15 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { categoryService } from "../services/category.service";
+import { useCategories } from "../hooks/useCategories";
 import type { ICategory, CategoryQueryParams } from "../types";
-import { formatDate } from "@/lib/utils";
+import { formatDate, FALLBACK_IMAGE, SEARCH_DEBOUNCE_DELAY } from "@/utils";
 import { router } from "@/app/router.instance";
 import "./CategoryList.scss";
 
 const { Title, Text } = Typography;
-
-// Debounce delay for search (ms)
-const SEARCH_DEBOUNCE_DELAY = 500;
-
-// Fallback image base64
-const FALLBACK_IMAGE =
-  "data:image/png;base64,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";
-
 export function CategoryList() {
+  const { activeCategory, deleteCategory: unactiveCategory } = useCategories();
   const [categories, setCategories] = useState<ICategory[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchValue, setSearchValue] = useState("");
@@ -142,31 +137,21 @@ export function CategoryList() {
     }));
   };
 
-  const handleDeleteCategory = async (category: ICategory) => {
+  const isCategoryActive = (status?: string) => {
+    return status?.toUpperCase() === "ACTIVE";
+  };
+
+  const handleToggleStatus = async (category: ICategory, checked: boolean) => {
     try {
       setLoading(true);
-      const response = await categoryService.deleteCategory(category.slug);
-      if (response.success) {
-        message.success("Xóa danh mục thành công!");
-
-        // If current page has only one item and it's not the first page,
-        // go to previous page after deletion
-        if (categories.length === 1 && pagination.page > 1) {
-          setFilters((prev) => ({
-            ...prev,
-            page: prev.page! - 1,
-          }));
-        } else {
-          await fetchCategories();
-        }
+      if (checked) {
+        await activeCategory(category.slug);
       } else {
-        message.error(
-          response.message || "Không thể xóa danh mục, vui lòng thử lại"
-        );
+        await unactiveCategory(category.slug);
       }
+      await fetchCategories();
     } catch (error) {
-      console.error("Error deleting category:", error);
-      message.error("Có lỗi xảy ra khi xóa danh mục");
+      console.error("Error toggling category status:", error);
     } finally {
       setLoading(false);
     }
@@ -186,11 +171,7 @@ export function CategoryList() {
       render: (thumbnail: string | null) => {
         return (
           <Image
-            src={
-              thumbnail
-                ? `https://cdn.mangareader.io.vn/${thumbnail}`
-                : undefined
-            }
+            src={thumbnail ? `${thumbnail}` : undefined}
             alt="Category thumbnail"
             width={60}
             height={60}
@@ -236,7 +217,12 @@ export function CategoryList() {
       dataIndex: "status",
       render: (status: string | undefined) => {
         if (!status) return <Tag>-</Tag>;
-        return <Tag>{status}</Tag>;
+        const isActive = isCategoryActive(status);
+        return (
+          <Tag color={isActive ? "success" : "error"}>
+            {status}
+          </Tag>
+        );
       },
     },
     {
@@ -247,49 +233,53 @@ export function CategoryList() {
     {
       title: "Hành động",
       key: "actions",
-      width: 180,
-      render: (_: unknown, category: ICategory) => (
-        <Space size="small">
-          <Tooltip title="Chỉnh sửa danh mục">
-            <Button
-              type="link"
-              icon={<EyeOutlined />}
-              onClick={() => {
-                router.navigate({
-                  to: "/categories/$slug/edit",
-                  params: { slug: category.slug },
-                } as never);
-              }}
-            >
-              Sửa
-            </Button>
-          </Tooltip>
-          <Popconfirm
-            title="Xác nhận xóa danh mục"
-            description={
-              <div>
-                <p>
-                  Bạn có chắc chắn muốn xóa danh mục "{category.title}" không?
-                </p>
-                <p style={{ color: "red", fontSize: "12px", marginTop: 8 }}>
-                  Hành động này không thể hoàn tác!
-                </p>
-              </div>
-            }
-            icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
-            okText="Xóa"
-            cancelText="Hủy"
-            okButtonProps={{ danger: true }}
-            onConfirm={() => handleDeleteCategory(category)}
-          >
-            <Tooltip title="Xóa danh mục">
-              <Button type="link" danger icon={<DeleteOutlined />}>
-                Xóa
+      width: 250,
+      render: (_: unknown, category: ICategory) => {
+        const isActive = isCategoryActive(category.status);
+        return (
+          <Space size="small">
+            <Tooltip title="Chỉnh sửa danh mục">
+              <Button
+                type="link"
+                icon={<EyeOutlined />}
+                onClick={() => {
+                  router.navigate({
+                    to: "/categories/$slug/edit",
+                    params: { slug: category.slug },
+                  } as never);
+                }}
+              >
+                Sửa
               </Button>
             </Tooltip>
-          </Popconfirm>
-        </Space>
-      ),
+            <Popconfirm
+              title={isActive ? "Vô hiệu hóa danh mục" : "Kích hoạt danh mục"}
+              description={
+                <div>
+                  <p>
+                    Bạn có chắc chắn muốn {isActive ? "vô hiệu hóa" : "kích hoạt"} danh mục "{category.title}" không?
+                  </p>
+                </div>
+              }
+              icon={<ExclamationCircleOutlined style={{ color: isActive ? "orange" : "green" }} />}
+              okText={isActive ? "Vô hiệu hóa" : "Kích hoạt"}
+              cancelText="Hủy"
+              okButtonProps={{ danger: isActive }}
+              onConfirm={() => handleToggleStatus(category, !isActive)}
+            >
+              <Tooltip title={isActive ? "Vô hiệu hóa danh mục" : "Kích hoạt danh mục"}>
+                <Button 
+                  type="link" 
+                  danger={isActive}
+                  icon={isActive ? <StopOutlined /> : <CheckCircleOutlined />}
+                >
+                  {isActive ? "Vô hiệu hóa" : "Kích hoạt"}
+                </Button>
+              </Tooltip>
+            </Popconfirm>
+          </Space>
+        );
+      },
     },
   ];
 

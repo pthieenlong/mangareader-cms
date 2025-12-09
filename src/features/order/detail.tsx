@@ -14,50 +14,32 @@ import {
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { useRouter, useParams } from "@tanstack/react-router";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import {
+  formatCurrency,
+  formatDate,
+  getPayingMethodText,
+  getOrderStatusColor,
+  getOrderStatusText,
+} from "@/utils";
 import { useOrderDetail } from "./hooks/useOrderDetail";
 import type { IOrderItem } from "./types";
-import { getPayingMethodText, getStatusColor, getStatusText } from "./utils";
 import "./order-detail.scss";
 
 const { Title, Text } = Typography;
 
 const itemColumns: ColumnsType<IOrderItem> = [
   {
-    title: "Ảnh",
-    dataIndex: "thumbnail",
-    width: 110,
-    align: "center",
-    render: (_: unknown, record) =>
-      record.book?.thumbnail ? (
-        <img
-          src={record.book.thumbnail}
-          alt={record.book.title}
-          style={{ width: 64, height: 90, objectFit: "cover", borderRadius: 4 }}
-        />
-      ) : (
-        <Text type="secondary">Không có</Text>
-      ),
-  },
-  {
-    title: "Truyện / Chương",
+    title: "Sách/Chương",
     key: "resource",
     render: (_: unknown, record) => (
-      <Space direction="vertical" size={2}>
-        <Text strong>
-          {record.book?.title || `Sách ID: ${record.bookId ?? "-"}`}
-        </Text>
-        {record.book?.slug && (
-          <Text type="secondary">Slug: {record.book.slug}</Text>
-        )}
-        {record.chapter ? (
-          <Text type="secondary">
-            Chương {record.chapter.chapterNumber ?? ""}: {record.chapter.title}
-          </Text>
-        ) : record.chapterId ? (
-          <Text type="secondary">Chương ID: {record.chapterId}</Text>
+      <Space direction="vertical" size={0}>
+        {record.bookId ? (
+          <Text>Kèm sách: {record.bookId}</Text>
         ) : (
-          <Text type="secondary">Không có chương</Text>
+          <Text type="secondary">Không có sách</Text>
+        )}
+        {record.chapterId && (
+          <Text type="secondary">Chương: {record.chapterId}</Text>
         )}
       </Space>
     ),
@@ -87,13 +69,8 @@ const itemColumns: ColumnsType<IOrderItem> = [
 ];
 
 export default function OrderDetailPage() {
+  const { userId, orderId } = useParams({ from: "/orders/$userId/$orderId" });
   const router = useRouter();
-  const params = useParams({ strict: false }) as {
-    userId?: string;
-    orderId?: string;
-  };
-  const userId = params.userId;
-  const orderId = params.orderId;
   const { order, loading, refresh } = useOrderDetail(userId, orderId);
 
   if (!userId || !orderId) {
@@ -108,10 +85,7 @@ export default function OrderDetailPage() {
         <Space size="middle">
           <Button
             icon={<ArrowLeftOutlined />}
-            onClick={() =>
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              (router as any).navigate({ to: "/order" })
-            }
+            onClick={() => router.navigate({ to: "/orders" })}
           >
             Quay lại
           </Button>
@@ -139,8 +113,8 @@ export default function OrderDetailPage() {
                       <Text code>{order.id}</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Trạng thái">
-                      <Tag color={getStatusColor(order.status)}>
-                        {getStatusText(order.status)}
+                      <Tag color={getOrderStatusColor(order.status)}>
+                        {getOrderStatusText(order.status)}
                       </Tag>
                     </Descriptions.Item>
                     <Descriptions.Item label="Tổng tiền">

@@ -34,7 +34,7 @@ import {
 } from "@ant-design/icons";
 import type { CustomTagProps } from "rc-select/lib/BaseSelect";
 import { useBlocker } from "@tanstack/react-router";
-import { generateSlug, formatCurrency } from "@/lib/utils";
+import { generateSlug, formatCurrency } from "@/utils";
 import type { BookStatus, IBookCategory, IBookFormValues } from "../types";
 
 const { Text, Paragraph } = Typography;

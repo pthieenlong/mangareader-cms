@@ -51,13 +51,6 @@ export const categoryService = {
       formData.append("thumbnail", payload.thumbnail);
     }
 
-    // Debug: Log FormData contents
-    console.log("FormData contents:");
-    console.log("description:", formData.get("description"));
-    console.log("thumbnail:", formData.get("thumbnail"));
-    console.log("thumbnail type:", formData.get("thumbnail") instanceof File);
-    console.log("payload.thumbnail:", payload.thumbnail);
-
     const response = await axiosInstance.put<CustomResponse>(
       `/admin/category/${slug}`,
       formData
@@ -65,8 +58,15 @@ export const categoryService = {
     return response.data;
   },
 
-  async deleteCategory(slug: string): Promise<CustomResponse> {
+  async unactiveCategory(slug: string): Promise<CustomResponse> {
     const response = await axiosInstance.delete<CustomResponse>(
+      `/admin/category/${slug}`
+    );
+    return response.data;
+  },
+
+  async activeCategory(slug: string): Promise<CustomResponse> {
+    const response = await axiosInstance.patch<CustomResponse>(
       `/admin/category/${slug}`
     );
     return response.data;

@@ -78,20 +78,46 @@ export function useCategories() {
   const deleteCategory = useCallback(
     async (slug: string) => {
       try {
-        const response = await categoryService.deleteCategory(slug);
+        const response = await categoryService.unactiveCategory(slug);
         if (response.success) {
-          message.success("Xóa danh mục thành công!");
+          message.success("Vô hiệu hóa danh mục thành công!");
           await fetchCategories();
           return response.data;
         } else {
           const errorMessage =
-            response.message || "Không thể xóa danh mục, vui lòng thử lại.";
+            response.message ||
+            "Không thể vô hiệu hóa danh mục, vui lòng thử lại.";
           message.error(errorMessage);
           throw new Error(errorMessage);
         }
       } catch (err) {
         const errorMessage =
-          (err as Error).message || "Có lỗi xảy ra khi xóa danh mục.";
+          (err as Error).message || "Có lỗi xảy ra khi vô hiệu hóa danh mục.";
+        message.error(errorMessage);
+        throw err;
+      }
+    },
+    [fetchCategories]
+  );
+
+  const activeCategory = useCallback(
+    async (slug: string) => {
+      try {
+        const response = await categoryService.activeCategory(slug);
+        if (response.success) {
+          message.success("Kích hoạt danh mục thành công!");
+          await fetchCategories();
+          return response.data;
+        } else {
+          const errorMessage =
+            response.message ||
+            "Không thể kích hoạt danh mục, vui lòng thử lại.";
+          message.error(errorMessage);
+          throw new Error(errorMessage);
+        }
+      } catch (err) {
+        const errorMessage =
+          (err as Error).message || "Có lỗi xảy ra khi kích hoạt danh mục.";
         message.error(errorMessage);
         throw err;
       }
@@ -111,5 +137,6 @@ export function useCategories() {
     currentQuery: queryRef.current,
     updateCategory,
     deleteCategory,
+    activeCategory,
   };
 }

@@ -11,9 +11,18 @@
   gap: 16px;
 }
 
+.book-list-statistics {
+  margin-bottom: 8px;
+}
+
 .book-list-filters {
   .ant-card-body {
     padding: 16px;
+  }
+
+  .ant-space {
+    display: flex;
+    align-items: center;
   }
 }
 

@@ -1,0 +1,38 @@
+.analytic-card {
+  height: 100%;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: box-shadow 0.2s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .ant-card-body {
+    padding: 20px;
+  }
+
+  &__loading {
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  &__trend {
+    margin-top: 8px;
+
+    .anticon {
+      margin-right: 4px;
+    }
+  }
+
+  .ant-statistic-title {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .ant-statistic-content {
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+}

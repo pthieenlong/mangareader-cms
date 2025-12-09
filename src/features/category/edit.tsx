@@ -61,9 +61,7 @@ export default function EditCategoryPage() {
         const response = await categoryService.getCategoryBySlug(slug);
         if (response.success && response.data) {
           const data = response.data as ICategory;
-          const thumbnailUrl = data.thumbnail
-            ? `https://cdn.mangareader.io.vn/${data.thumbnail}`
-            : "";
+          const thumbnailUrl = data.thumbnail ? `${data.thumbnail}` : "";
           const mappedValues: CategoryFormValues = {
             title: data.title ?? "",
             description: data.description ?? "",

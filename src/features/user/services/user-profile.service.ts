@@ -6,11 +6,17 @@ import {
   AccountStatus,
   UserRole,
   type IPublisherBook,
+  type IPublisherOrdersParams,
   type IPublisherOverviewStats,
   type IUserFavorite,
+  type IUserFavoriteBook,
   type IUserOrderHistory,
   type IUserProfileDetail,
   type IUserProfileUpdatePayload,
+  type IUserPurchasedOrder,
+  type IUserPurchasedOrdersParams,
+  type IUserPurchasedOrdersResponse,
+  type IUserStatistics,
 } from "../types";
 import { OrderStatus, PayingMethod } from "@/features/order/types";
 
@@ -70,6 +76,9 @@ const mapFavorite = (raw: any): IUserFavorite => {
   const book = raw?.book ?? {};
   const baseCategories =
     raw?.categories ??
+    book?.bookCategories?.map?.(
+      (relation: any) => relation?.category?.title ?? relation?.category
+    ) ??
     book?.categories?.map?.((category: any) => category?.title) ??
     [];
   return {
@@ -80,6 +89,74 @@ const mapFavorite = (raw: any): IUserFavorite => {
     categories: Array.isArray(baseCategories) ? baseCategories : [],
     purchasedAt: raw?.purchasedAt ?? raw?.createdAt ?? book?.createdAt,
   };
+};
+
+const mapFavoriteBook = (raw: any): IUserFavoriteBook => {
+  const book = raw?.book ?? raw;
+  return {
+    id: String(book?.id ?? ""),
+    title: book?.title ?? "Không xác định",
+    slug: book?.slug ?? "",
+    thumbnail: book?.thumbnail,
+    author: book?.author,
+    price: Number(book?.price ?? 0),
+    publisherId: String(book?.publisherId ?? ""),
+    isFree: Boolean(book?.isFree ?? false),
+    bookCategories: Array.isArray(book?.bookCategories)
+      ? book.bookCategories
+      : [],
+  };
+};
+
+const mapPurchasedOrder = (raw: any): IUserPurchasedOrder => {
+  const orderItems = Array.isArray(raw?.orderItems)
+    ? raw.orderItems.map((item: any) => ({
+        id: String(item?.id ?? ""),
+        bookId: String(item?.bookId ?? ""),
+        bookTitle: item?.bookTitle ?? item?.book?.title,
+        defaultPrice: Number(item?.defaultPrice ?? 0),
+        discountPrice: Number(item?.discountPrice ?? 0),
+        book: {
+          id: String(item?.book?.id ?? item?.bookId ?? ""),
+          title: String(item?.book?.title ?? item?.bookTitle ?? ""),
+          slug: String(item?.book?.slug ?? ""),
+          thumbnail: item?.book?.thumbnail,
+          author: item?.book?.author,
+        },
+      }))
+    : [];
+
+  return {
+    id: String(raw?.id ?? ""),
+    orderCode: String(raw?.orderCode ?? ""),
+    userId: String(raw?.userId ?? ""),
+    userName: raw?.userName,
+    totalAmount: Number(raw?.totalAmount ?? 0),
+    status: normalizeOrderStatus(raw?.status),
+    payingMethod: normalizePayingMethod(raw?.payingMethod),
+    createdAt:
+      raw?.createdAt ??
+      raw?.paidAt ??
+      raw?.updatedAt ??
+      new Date().toISOString(),
+    updatedAt: raw?.updatedAt ?? raw?.paidAt ?? new Date().toISOString(),
+    paidAt: raw?.paidAt,
+    orderItems,
+  };
+};
+
+const mapPublisherOrder = (raw: any): IUserPurchasedOrder => {
+  const fallbackId =
+    raw?.id ??
+    raw?.orderId ??
+    raw?.code ??
+    `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return mapPurchasedOrder({
+    ...raw,
+    id: fallbackId,
+    orderCode: raw?.orderCode ?? fallbackId,
+    orderItems: raw?.orderItems ?? [],
+  });
 };
 
 const mapPublisherBook = (raw: any): IPublisherBook => {
@@ -121,6 +198,22 @@ export const userProfileService = {
     return mapUserProfile(data);
   },
 
+  async getUserStatistics(id: string): Promise<IUserStatistics> {
+    const response = await axiosInstance.get<CustomResponse>(
+      `/admin/user/${id}/statistic`
+    );
+    const data = handleResponseData(
+      response.data,
+      "Không thể tải thống kê người dùng."
+    );
+    return {
+      totalSpent: Number(data?.totalSpent ?? 0),
+      purchaseCount: Number(data?.purchaseCount ?? 0),
+      favoriteCount: Number(data?.favoriteCount ?? 0),
+      readingHistoryCount: Number(data?.readingHistoryCount ?? 0),
+    };
+  },
+
   async getUserOrders(id: string): Promise<IUserOrderHistory[]> {
     const response = await axiosInstance.get<CustomResponse>(
       `/admin/user/${id}/purchased`
@@ -133,6 +226,107 @@ export const userProfileService = {
     return list.map(mapOrderHistory);
   },
 
+  async getUserPurchasedOrders(
+    id: string,
+    params?: IUserPurchasedOrdersParams
+  ): Promise<IUserPurchasedOrdersResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) {
+      queryParams.append("page", String(params.page));
+    }
+    if (params?.sortBy) {
+      queryParams.append("sortBy", params.sortBy);
+    }
+    if (params?.sortOrder) {
+      queryParams.append("sortOrder", params.sortOrder);
+    }
+
+    const queryString = queryParams.toString();
+    const url = `/admin/user/${id}/purchased${
+      queryString ? `?${queryString}` : ""
+    }`;
+
+    const response = await axiosInstance.get<CustomResponse>(url);
+    const data = handleResponseData(
+      response.data,
+      "Không thể tải đơn hàng của người dùng."
+    );
+
+    return {
+      orders: Array.isArray(data?.orders)
+        ? data.orders.map(mapPurchasedOrder)
+        : [],
+      totalOrders: Number(data?.totalOrders ?? 0),
+      pagination: {
+        page: Number(data?.pagination?.page ?? params?.page ?? 1),
+        limit: Number(data?.pagination?.limit ?? 10),
+        totalPages: Number(data?.pagination?.totalPages ?? 1),
+      },
+    };
+  },
+
+  async getPublisherRevenueStats(id: string): Promise<IPublisherOverviewStats> {
+    const response = await axiosInstance.get(
+      `/admin/user/${id}/publisher/revenue`
+    );
+    const payload =
+      response.data?.data?.data ??
+      response.data?.data ??
+      response.data?.payload ??
+      response.data;
+
+    if (!payload) {
+      throw new Error("Không thể tải doanh thu publisher.");
+    }
+
+    return {
+      totalRevenue: Number(payload.totalRevenue ?? 0),
+      totalBooks: Number(payload.totalBooks ?? payload.publishedBookCount ?? 0),
+      totalOrders: Number(payload.totalOrders ?? 0),
+      publishedBookCount: Number(
+        payload.publishedBookCount ?? payload.totalBooks ?? 0
+      ),
+    };
+  },
+
+  async getPublisherOrders(
+    id: string,
+    params?: IPublisherOrdersParams
+  ): Promise<IUserPurchasedOrdersResponse> {
+    const queryParams = new URLSearchParams();
+    if (params?.page) {
+      queryParams.append("page", String(params.page));
+    }
+    if (params?.limit) {
+      queryParams.append("limit", String(params.limit));
+    }
+
+    const queryString = queryParams.toString();
+    const url = `/admin/user/${id}/publisher/orders${
+      queryString ? `?${queryString}` : ""
+    }`;
+
+    const response = await axiosInstance.get(url);
+    const payload =
+      response.data?.data?.data ??
+      response.data?.data ??
+      response.data?.payload ??
+      response.data;
+
+    const ordersData = Array.isArray(payload?.orders) ? payload.orders : [];
+    const pagination = payload?.pagination ?? {};
+
+    return {
+      orders: ordersData.map(mapPublisherOrder),
+      totalOrders: Number(pagination?.total ?? ordersData.length ?? 0),
+      pagination: {
+        page: Number(pagination?.page ?? params?.page ?? 1),
+        limit: Number(pagination?.limit ?? params?.limit ?? 10),
+        totalPages: Number(pagination?.totalPages ?? 1),
+      },
+    };
+  },
+
   async getUserFavorites(id: string): Promise<IUserFavorite[]> {
     const response = await axiosInstance.get<CustomResponse>(
       `/admin/user/${id}/favorite`
@@ -141,8 +335,51 @@ export const userProfileService = {
       response.data,
       "Không thể tải danh sách yêu thích của người dùng."
     );
-    const list = Array.isArray(data) ? data : data?.items ?? [];
+    // Handle new API response format: data is array of { favorites: [...] }
+    if (Array.isArray(data)) {
+      // Check if it's the new format with favorites array
+      const favoritesArray = data.find((item: any) => item?.favorites);
+      if (favoritesArray?.favorites) {
+        return favoritesArray.favorites.map((item: any) => mapFavorite(item));
+      }
+      // Old format: array of favorites directly
+      return data.map(mapFavorite);
+    }
+    // Handle object with favorites array
+    if (data?.favorites && Array.isArray(data.favorites)) {
+      return data.favorites.map((item: any) => mapFavorite(item));
+    }
+    // Fallback to old format
+    const list = data?.items ?? [];
     return list.map(mapFavorite);
+  },
+
+  async getUserFavoriteBooks(id: string): Promise<IUserFavoriteBook[]> {
+    const response = await axiosInstance.get<CustomResponse>(
+      `/admin/user/${id}/favorite`
+    );
+    const data = handleResponseData(
+      response.data,
+      "Không thể tải danh sách yêu thích của người dùng."
+    );
+    // Handle new API response format: data is array of { favorites: [...] }
+    if (Array.isArray(data)) {
+      // Check if it's the new format with favorites array
+      const favoritesArray = data.find((item: any) => item?.favorites);
+      if (favoritesArray?.favorites) {
+        return favoritesArray.favorites.map((item: any) =>
+          mapFavoriteBook(item)
+        );
+      }
+      // Old format: array of favorites directly
+      return data.map((item: any) => mapFavoriteBook(item));
+    }
+    // Handle object with favorites array
+    if (data?.favorites && Array.isArray(data.favorites)) {
+      return data.favorites.map((item: any) => mapFavoriteBook(item));
+    }
+    // Fallback
+    return [];
   },
 
   async updateUserProfile(
@@ -206,34 +443,21 @@ export const userProfileService = {
   },
 
   async getPublisherStats(id: string): Promise<IPublisherOverviewStats> {
-    // Calculate from books (since dashboard endpoint is for current publisher only)
-    const books = await this.getPublisherBooks(id);
-    const publishedBooks = books.filter(
-      (book) => book.status === "PUBLISHED"
-    );
+    const stats = await this.getPublisherRevenueStats(id);
 
-    // Try to get revenue from revenue endpoint (may not work in admin context)
-    let totalRevenue = 0;
-    try {
-      // Note: This endpoint might require publisher auth, so it may fail in admin context
-      // In that case, revenue will be 0
-      const revenueResponse = await axiosInstance.get<CustomResponse>(
-        `/publisher/revenue`
+    // Fallback: if API does not provide book count, derive from published books
+    if (!stats.totalBooks) {
+      const books = await this.getPublisherBooks(id);
+      const publishedBooks = books.filter(
+        (book) => book.status === "PUBLISHED"
       );
-      const revenueData = handleResponseData(
-        revenueResponse.data,
-        "Không thể tải doanh thu."
-      );
-      totalRevenue = Number(revenueData?.totalRevenue ?? revenueData?.total ?? 0);
-    } catch (error) {
-      // Revenue endpoint may not be accessible in admin context
-      // This is expected, so we just set revenue to 0
-      console.warn("Could not fetch revenue (may require publisher auth)", error);
+      return {
+        ...stats,
+        totalBooks: publishedBooks.length,
+        publishedBookCount: publishedBooks.length,
+      };
     }
 
-    return {
-      totalRevenue,
-      publishedBookCount: publishedBooks.length,
-    };
+    return stats;
   },
 };

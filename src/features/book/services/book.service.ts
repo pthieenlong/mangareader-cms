@@ -1,10 +1,6 @@
 import axiosInstance from "@/lib/axios";
 import type { CustomResponse } from "@/lib/custom";
-import type {
-  CreateBookPayload,
-  IBookListParams,
-  UpdateBookPayload,
-} from "../types";
+import type { IBookListParams } from "../types";
 
 interface ApprovalPayload {
   notes?: string;
@@ -14,44 +10,26 @@ interface RejectPayload extends ApprovalPayload {
   reason: string;
 }
 
-interface ArchivePayload {
-  notes?: string;
-}
-
 export const bookService = {
   async getBooks(params?: IBookListParams): Promise<CustomResponse> {
-    const response = await axiosInstance.get<CustomResponse>("/books", {
+    console.log(params);
+    const response = await axiosInstance.get<CustomResponse>("/admin/books", {
       params,
     });
     return response.data;
   },
 
+  async getBookOverviewStatistics(): Promise<CustomResponse> {
+    const response = await axiosInstance.get<CustomResponse>(
+      "/admin/statistics/books/overview"
+    );
+    return response.data;
+  },
+
   async getBookBySlug(slug: string): Promise<CustomResponse> {
-    const response = await axiosInstance.get<CustomResponse>(`/books/${slug}`);
-    return response.data;
-  },
-
-  async createBook(payload: CreateBookPayload): Promise<CustomResponse> {
-    const response = await axiosInstance.post<CustomResponse>(
-      "/books",
-      payload
+    const response = await axiosInstance.get<CustomResponse>(
+      `/admin/books/${slug}`
     );
-    return response.data;
-  },
-
-  async updateBook(
-    slug: string,
-    payload: UpdateBookPayload
-  ): Promise<CustomResponse> {
-    const response = await axiosInstance.put<CustomResponse>(
-      `/books/${slug}`,
-      payload
-    );
-    return response.data;
-  },
-
-  async deleteBook(id: string): Promise<CustomResponse> {
-    const response = await axiosInstance.delete<CustomResponse>(`/books/${id}`);
     return response.data;
   },
 
@@ -82,13 +60,16 @@ export const bookService = {
     return response.data;
   },
 
-  async archiveBook(
-    bookSlug: string,
-    payload?: ArchivePayload
-  ): Promise<CustomResponse> {
-    const response = await axiosInstance.put<CustomResponse>(
-      `/admin/books/${bookSlug}/archive`,
-      payload ?? {}
+  async archiveBook(bookSlug: string): Promise<CustomResponse> {
+    const response = await axiosInstance.delete<CustomResponse>(
+      `/admin/books/${bookSlug}`
+    );
+    return response.data;
+  },
+
+  async unarchiveBook(bookSlug: string): Promise<CustomResponse> {
+    const response = await axiosInstance.post<CustomResponse>(
+      `/admin/books/${bookSlug}`
     );
     return response.data;
   },

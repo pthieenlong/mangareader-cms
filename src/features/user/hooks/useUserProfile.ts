@@ -53,7 +53,7 @@ export function useUserProfile(userId?: string): UseUserProfileResult {
       if (profileData.role === UserRole.PUBLISHER) {
         const [publisherBooksData, publisherStatsData] = await Promise.all([
           userProfileService.getPublisherBooks(userId),
-          userProfileService.getPublisherStats(userId),
+          userProfileService.getPublisherRevenueStats(userId),
         ]);
         setPublisherBooks(publisherBooksData);
         setOverview(publisherStatsData);

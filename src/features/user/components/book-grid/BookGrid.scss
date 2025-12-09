@@ -1,0 +1,17 @@
+.book-grid {
+  &__card {
+    width: 320px;
+  }
+
+  &__thumbnail {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+}

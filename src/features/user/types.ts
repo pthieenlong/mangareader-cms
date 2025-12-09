@@ -44,9 +44,18 @@ export interface IUserOverviewStats {
   readingCount: number;
 }
 
+export interface IUserStatistics {
+  totalSpent: number;
+  purchaseCount: number;
+  favoriteCount: number;
+  readingHistoryCount: number;
+}
+
 export interface IPublisherOverviewStats {
   totalRevenue: number;
-  publishedBookCount: number;
+  totalBooks: number;
+  totalOrders: number;
+  publishedBookCount?: number;
 }
 
 export interface IUserProfileDetail extends IUser {
@@ -66,6 +75,60 @@ export interface IUserOrderHistory {
   payingMethod: PayingMethod;
 }
 
+export interface IUserPurchasedOrderItem {
+  id: string;
+  bookId: string;
+  bookTitle?: string;
+  defaultPrice: number;
+  discountPrice: number;
+  book: {
+    id: string;
+    title: string;
+    slug: string;
+    thumbnail?: string;
+    author?: string;
+  };
+}
+
+export interface IUserPurchasedOrder {
+  id: string;
+  orderCode: string;
+  userId: string;
+  userName?: string;
+  totalAmount: number;
+  status: OrderStatus;
+  payingMethod: PayingMethod;
+  createdAt: string;
+  updatedAt: string;
+  paidAt?: string;
+  orderItems: IUserPurchasedOrderItem[];
+}
+
+export interface IUserPurchasedOrdersResponse {
+  orders: IUserPurchasedOrder[];
+  totalOrders: number;
+  pagination: {
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
+}
+
+export type PurchasedOrderSortBy = "totalAmount" | "createdAt";
+export type SortOrder = "asc" | "desc";
+
+export interface IUserPurchasedOrdersParams {
+  page?: number;
+  limit?: number;
+  sortBy?: PurchasedOrderSortBy;
+  sortOrder?: SortOrder;
+}
+
+export interface IPublisherOrdersParams {
+  page?: number;
+  limit?: number;
+}
+
 export interface IUserFavorite {
   id: string;
   title: string;
@@ -73,6 +136,28 @@ export interface IUserFavorite {
   thumbnail?: string;
   categories: string[];
   purchasedAt?: string;
+}
+
+export interface IUserFavoriteBook {
+  id: string;
+  title: string;
+  slug: string;
+  thumbnail?: string;
+  author?: string;
+  price: number;
+  publisherId: string;
+  isFree: boolean;
+  bookCategories: Array<{
+    category: {
+      title: string;
+    };
+  }>;
+}
+
+export interface IUserFavoriteBookResponse {
+  favorites: Array<{
+    book: IUserFavoriteBook;
+  }>;
 }
 
 export interface IPublisherBook {

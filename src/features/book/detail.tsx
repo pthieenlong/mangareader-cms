@@ -60,7 +60,7 @@ export default function BookDetailPage() {
         setActionLoading(true);
         try {
           const response = await bookService.approveBook(
-            book.id,
+            book.slug,
             notes ? { notes } : undefined
           );
           if (response.success) {
@@ -87,7 +87,7 @@ export default function BookDetailPage() {
             reason,
             ...(notes?.trim() ? { notes: notes.trim() } : {}),
           };
-          const response = await bookService.rejectBook(book.id, payload);
+          const response = await bookService.rejectBook(book.slug, payload);
           if (response.success) {
             message.success("Đã từ chối truyện và thông báo cho Publisher.");
             await refetch();
@@ -102,16 +102,13 @@ export default function BookDetailPage() {
           setActionLoading(false);
         }
       }}
-      onArchive={async ({ notes } = {}) => {
+      onArchive={async () => {
         if (!book) {
           return;
         }
         setActionLoading(true);
         try {
-          const response = await bookService.archiveBook(
-            book.id,
-            notes?.trim() ? { notes: notes.trim() } : undefined
-          );
+          const response = await bookService.archiveBook(book.slug);
           if (response.success) {
             message.success("Truyện đã được chuyển sang trạng thái lưu trữ.");
             await refetch();
@@ -121,6 +118,27 @@ export default function BookDetailPage() {
         } catch (err) {
           message.error(
             (err as Error).message || "Có lỗi xảy ra khi lưu trữ truyện."
+          );
+        } finally {
+          setActionLoading(false);
+        }
+      }}
+      onUnarchive={async () => {
+        if (!book) {
+          return;
+        }
+        setActionLoading(true);
+        try {
+          const response = await bookService.unarchiveBook(book.slug);
+          if (response.success) {
+            message.success("Truyện đã được khôi phục thành công.");
+            await refetch();
+          } else {
+            message.error(response.message || "Không thể khôi phục truyện.");
+          }
+        } catch (err) {
+          message.error(
+            (err as Error).message || "Có lỗi xảy ra khi khôi phục truyện."
           );
         } finally {
           setActionLoading(false);

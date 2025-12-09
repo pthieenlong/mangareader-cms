@@ -12,25 +12,15 @@ import {
   Typography,
   message,
 } from "antd";
-import { formatDate } from "@/lib/utils";
+import {
+  formatDate,
+  getChapterStatusColor,
+  getChapterStatusText,
+} from "@/utils";
 import { router } from "@/app/router.instance";
 import { useChapterDetail } from "./hooks/useChapterDetail";
 
 const { Title, Text } = Typography;
-
-const chapterStatusColorMap: Record<string, string> = {
-  PENDING: "warning",
-  DRAFT: "default",
-  PUBLISHED: "success",
-  ARCHIVED: "error",
-};
-
-const chapterStatusLabelMap: Record<string, string> = {
-  PENDING: "Đang chờ",
-  DRAFT: "Bản nháp",
-  PUBLISHED: "Đã phát hành",
-  ARCHIVED: "Đã lưu trữ",
-};
 
 export default function ChapterDetailPage() {
   const { slug, chapterSlug } = useParams({
@@ -113,8 +103,8 @@ export default function ChapterDetailPage() {
         <Title level={3} style={{ margin: 0 }}>
           Chương {chapter.chapterNumber}: {chapter.title}
         </Title>
-        <Tag color={chapterStatusColorMap[chapter.status]}>
-          {chapterStatusLabelMap[chapter.status]}
+        <Tag color={getChapterStatusColor(chapter.status)}>
+          {getChapterStatusText(chapter.status)}
         </Tag>
       </Space>
 

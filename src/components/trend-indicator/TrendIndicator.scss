@@ -1,0 +1,9 @@
+.trend-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+
+  &__suffix {
+    margin-left: 2px;
+  }
+}

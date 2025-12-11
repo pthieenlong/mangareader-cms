@@ -9,11 +9,7 @@ interface BookGridProps {
   onSelect?: (book: IPublisherBook) => void;
 }
 
-export function BookGrid({
-  books,
-  loading = false,
-  onSelect,
-}: BookGridProps) {
+export function BookGrid({ books, loading = false, onSelect }: BookGridProps) {
   return (
     <Card title="Danh sách truyện đã đăng tải">
       <List
@@ -78,4 +74,3 @@ export function BookGrid({
     </Card>
   );
 }
-

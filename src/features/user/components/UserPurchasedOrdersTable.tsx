@@ -62,7 +62,7 @@ export function UserPurchasedOrdersTable({
       key: "createdAt",
       width: 120,
       sorter: true,
-      sortOrder: sortBy === "createdAt" ? sortOrder : null,
+      // sortOrder: sortBy === "createdAt" ? sortOrder : undefined,
       render: (value: string) => formatDate(value),
       onHeaderCell: () => ({
         onClick: () => handleSortChange("createdAt"),
@@ -84,7 +84,7 @@ export function UserPurchasedOrdersTable({
       width: 120,
       align: "right",
       sorter: true,
-      sortOrder: sortBy === "totalAmount" ? sortOrder : null,
+      // sortOrder: sortBy === "totalAmount" ? sortOrder : undefined,
       render: (value: number) => formatCurrency(value),
       onHeaderCell: () => ({
         onClick: () => handleSortChange("totalAmount"),
@@ -145,5 +145,3 @@ export function UserPurchasedOrdersTable({
     </Card>
   );
 }
-
-

@@ -16,7 +16,11 @@ export type OrderStatus =
   | "PAID"
   | "ERROR";
 
-export type PayingMethod = "BANK_TRANSFER" | "CREDIT_CARD" | "E_WALLET";
+export type PayingMethod =
+  | "BANK_TRANSFER"
+  | "CREDIT_CARD"
+  | "E_WALLET"
+  | "VNPAY";
 
 /**
  * Get Ant Design tag color for order status
@@ -58,6 +62,7 @@ export const getPayingMethodText = (method: PayingMethod): string => {
     BANK_TRANSFER: "Chuyển khoản",
     CREDIT_CARD: "Thẻ tín dụng",
     E_WALLET: "Ví điện tử",
+    VNPAY: "VNPay",
   };
   return textMap[method] || method;
 };

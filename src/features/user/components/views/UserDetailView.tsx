@@ -15,6 +15,7 @@ interface UserDetailViewProps {
   profile: IUserProfileDetail;
   stats?: IUserStatistics | null;
   statsLoading?: boolean;
+  overviewLoading?: boolean;
   favorites: IUserFavoriteBook[];
   favoritesLoading?: boolean;
   orders: IUserPurchasedOrder[];
@@ -41,7 +42,7 @@ export function UserDetailView({
   statsLoading,
   overviewLoading,
   favorites,
-  favoritesLoading,
+  favoritesLoading = false,
   orders,
   ordersLoading,
   ordersPagination,
@@ -99,4 +100,3 @@ export function UserDetailView({
     </Space>
   );
 }
-

@@ -60,7 +60,9 @@ export function usePublisherOrders(
       });
     } catch (err) {
       const error =
-        err instanceof Error ? err : new Error("Không thể tải đơn hàng publisher.");
+        err instanceof Error
+          ? err
+          : new Error("Không thể tải đơn hàng publisher.");
       setError(error);
       message.error("Không thể tải danh sách đơn hàng của publisher.");
     } finally {
@@ -72,9 +74,12 @@ export function usePublisherOrders(
     void fetchOrders();
   }, [fetchOrders]);
 
-  const updateParams = useCallback((newParams: Partial<IPublisherOrdersParams>) => {
-    setParams((prev) => ({ ...prev, ...newParams }));
-  }, []);
+  const updateParams = useCallback(
+    (newParams: Partial<IPublisherOrdersParams>) => {
+      setParams((prev) => ({ ...prev, ...newParams }));
+    },
+    []
+  );
 
   return useMemo(
     () => ({
@@ -88,4 +93,3 @@ export function usePublisherOrders(
     [fetchOrders, loading, orders, pagination, error, updateParams]
   );
 }
-

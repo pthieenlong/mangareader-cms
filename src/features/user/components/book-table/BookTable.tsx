@@ -15,7 +15,7 @@ export function BookTable({ books, loading = false }: BookTableProps) {
       dataIndex: "thumbnail",
       key: "thumbnail",
       width: 120,
-      render: (value?: string, record) =>
+      render: (value: string | undefined, record) =>
         value ? (
           <Image
             src={value}
@@ -123,4 +123,3 @@ export function BookTable({ books, loading = false }: BookTableProps) {
     />
   );
 }
-

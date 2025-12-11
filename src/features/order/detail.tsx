@@ -69,7 +69,10 @@ const itemColumns: ColumnsType<IOrderItem> = [
 ];
 
 export default function OrderDetailPage() {
-  const { userId, orderId } = useParams({ from: "/orders/$userId/$orderId" });
+  const { userId, orderId } = useParams({ strict: false }) as {
+    userId?: string;
+    orderId?: string;
+  };
   const router = useRouter();
   const { order, loading, refresh } = useOrderDetail(userId, orderId);
 
@@ -85,7 +88,7 @@ export default function OrderDetailPage() {
         <Space size="middle">
           <Button
             icon={<ArrowLeftOutlined />}
-            onClick={() => router.navigate({ to: "/orders" })}
+            onClick={() => router.navigate({ to: "/order" as never })}
           >
             Quay lại
           </Button>

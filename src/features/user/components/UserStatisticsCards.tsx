@@ -6,10 +6,7 @@ import {
   BookOutlined,
 } from "@ant-design/icons";
 import { AnalyticCard } from "@/components";
-import type {
-  IPublisherOverviewStats,
-  IUserStatistics,
-} from "../types";
+import type { IPublisherOverviewStats, IUserStatistics } from "../types";
 import { formatCurrency, formatNumber } from "@/utils";
 
 interface UserStatisticsCardsProps {
@@ -43,7 +40,7 @@ export function UserStatisticsCards({
             <Col xs={12} md={6}>
               <AnalyticCard
                 title="Số truyện đã đăng tải"
-                value={formatNumber(publisherOverview.publishedBookCount)}
+                value={formatNumber(publisherOverview.publishedBookCount ?? 0)}
                 prefix={<BookOutlined style={{ color: "#52c41a" }} />}
                 loading={overviewLoading}
               />
@@ -101,5 +98,3 @@ export function UserStatisticsCards({
     </Row>
   );
 }
-
-

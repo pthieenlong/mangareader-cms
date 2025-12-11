@@ -1,6 +1,6 @@
 import { Card, List, Spin, Tag } from "antd";
 import type { IUserFavoriteBook } from "../types";
-import { formatCurrency, formatDate } from "@/utils";
+import { formatCurrency } from "@/utils";
 
 interface UserFavoriteBooksListProps {
   books: IUserFavoriteBook[];
@@ -39,7 +39,13 @@ export function UserFavoriteBooksList({
                 <Card.Meta
                   title={item.title}
                   description={
-                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: 4,
+                      }}
+                    >
                       <span>Tác giả: {item.author || "Đang cập nhật"}</span>
                       <span>
                         Thể loại:{" "}
@@ -66,4 +72,3 @@ export function UserFavoriteBooksList({
     </Card>
   );
 }
-

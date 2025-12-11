@@ -119,7 +119,11 @@ export function ProfileCard({
 
   return (
     <Card title="Thông tin cá nhân">
-      <Space direction="vertical" size="middle" className="user-detail-page__profile">
+      <Space
+        direction="vertical"
+        size="middle"
+        className="user-detail-page__profile"
+      >
         <Space direction="vertical" size="middle" style={{ width: "100%" }}>
           <Upload
             className="user-detail-page__avatar-upload"
@@ -249,4 +253,3 @@ export function ProfileCard({
     </Card>
   );
 }
-

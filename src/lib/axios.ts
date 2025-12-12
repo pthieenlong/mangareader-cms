@@ -2,7 +2,7 @@ import axios, { AxiosError } from "axios";
 import type { CustomResponse } from "@/lib/custom";
 
 // Get API URL from environment variable, fallback to default
-const API_URL = import.meta.env.VITE_API_URL || "http://157.66.101.220:3000";
+const API_URL = import.meta.env.VITE_API_URL || "http://180.93.42.9:3000";
 
 const axiosInstance = axios.create({
   baseURL: API_URL,

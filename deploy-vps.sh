@@ -14,6 +14,13 @@ echo "📍 Branch: $BRANCH"
 
 cd "$PROJECT_DIR" || exit 1
 
+# Check and update git remote URL to use SSH if needed
+CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "")
+if [[ "$CURRENT_REMOTE" == *"https://github.com"* ]]; then
+    echo "🔧 Updating git remote to use SSH..."
+    git remote set-url origin git@github.com:pthieenlong/mangareader-cms.git
+fi
+
 # Pull latest code
 echo "📥 Pulling latest code..."
 git fetch origin

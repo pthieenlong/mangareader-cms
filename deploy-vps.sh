@@ -4,7 +4,7 @@
 
 set -e
 
-BRANCH=${BRANCH:-main}
+BRANCH=${BRANCH:-dev}
 PROJECT_DIR="/opt/mangareader-cms"
 CONTAINER_NAME="mangareader-cms"
 SERVICE_NAME="cms"

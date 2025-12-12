@@ -1,0 +1,53 @@
+name: Deploy MangaReader CMS to VPS
+
+on:
+  push:
+    branches:
+      - dev
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy to VPS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          command_timeout: 30m
+          timeout: 35m
+          script: |
+            set -e
+            echo "🔍 Checking deployment directory..."
+            if [ ! -d "/opt/mangareader-cms" ]; then
+              echo "❌ Directory /opt/mangareader-cms not found!"
+              echo "💡 Please clone the repository first:"
+              echo "   cd /opt && git clone https://github.com/pthieenlong/mangareader-cms.git mangareader-cms"
+              exit 1
+            fi
+
+            cd /opt/mangareader-cms
+            echo "📁 Current directory: $(pwd)"
+
+            # Pull latest code to ensure deploy script exists
+            echo "📥 Pulling latest code to get deploy script..."
+            git fetch origin
+            git reset --hard origin/dev
+
+            if [ ! -f "deploy-vps.sh" ]; then
+              echo "❌ deploy-vps.sh not found after pulling code!"
+              echo "💡 Please check if the file exists in the repository."
+              exit 1
+            fi
+
+            chmod +x deploy-vps.sh
+            echo "🚀 Running deploy script..."
+            BRANCH=dev ./deploy-vps.sh

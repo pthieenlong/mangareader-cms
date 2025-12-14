@@ -35,9 +35,9 @@ export const statisticsService = {
     return response.data;
   },
 
-  async getRecentOrders(limit: number = 5): Promise<CustomResponse> {
+  async getRecentOrders(): Promise<CustomResponse> {
     const response = await axiosInstance.get<CustomResponse>("/admin/orders", {
-      params: { limit, sortBy: "createdAt", sortOrder: "desc" },
+      params: { sortBy: "createdAt", sortOrder: "desc" },
     });
     return response.data;
   },
@@ -48,6 +48,30 @@ export const statisticsService = {
     const response = await axiosInstance.get<CustomResponse>(
       "/admin/statistics/revenue/chart",
       { params: { period } }
+    );
+    return response.data;
+  },
+
+  async getPendingPublishers(limit: number = 5): Promise<CustomResponse> {
+    const response = await axiosInstance.get<CustomResponse>(
+      "/admin/publishers/pending-approval",
+      {
+        params: { limit },
+      }
+    );
+    return response.data;
+  },
+
+  async approvePublisher(publisherId: string): Promise<CustomResponse> {
+    const response = await axiosInstance.put<CustomResponse>(
+      `/admin/publishers/${publisherId}/approve`
+    );
+    return response.data;
+  },
+
+  async rejectPublisher(publisherId: string): Promise<CustomResponse> {
+    const response = await axiosInstance.put<CustomResponse>(
+      `/admin/publishers/${publisherId}/reject`
     );
     return response.data;
   },

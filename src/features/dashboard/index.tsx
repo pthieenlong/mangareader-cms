@@ -1,5 +1,6 @@
-import { Card, Typography, Table, Tag, Row, Col, Segmented } from "antd";
+import { Card, Typography, Table, Tag, Row, Col, Segmented, Avatar, Button, Space, message } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { AnalyticCard, TrendIndicator } from "@/components";
 import { formatVND, formatNumber } from "@/utils";
 import { format } from "date-fns";
@@ -8,9 +9,11 @@ import { useRevenueStatistics } from "./hooks/useRevenueStatistics";
 import { useOverviewStatistics } from "./hooks/useOverviewStatistics";
 import { useUserStatistics } from "./hooks/useUserStatistics";
 import { useRecentOrders } from "./hooks/useRecentOrders";
+import { usePendingPublishers } from "./hooks/usePendingPublishers";
 import { useRevenueChart, type TimeRange } from "./hooks/useRevenueChart";
 import { RevenueChart, UserTypePieChart } from "./components";
-import type { IRecentOrder } from "./types";
+import type { IRecentOrder, IPendingPublisher } from "./types";
+import { statisticsService } from "./services/statistics.service";
 import "./dashboard.scss";
 
 const { Title, Text } = Typography;
@@ -91,6 +94,115 @@ export default function DashboardPage() {
   const { data: userStatsData, loading: userStatsLoading } =
     useUserStatistics();
   const { orders: recentOrders, loading: ordersLoading } = useRecentOrders(5);
+  const { publishers: pendingPublishers, loading: publishersLoading, refetch: refetchPublishers } =
+    usePendingPublishers(5);
+
+  // Handle approve publisher
+  const handleApprovePublisher = async (publisherId: string) => {
+    try {
+      const response = await statisticsService.approvePublisher(publisherId);
+      if (response.success) {
+        message.success(response.message || "Duyệt nhà xuất bản thành công");
+        refetchPublishers();
+      } else {
+        message.error(response.message || "Có lỗi xảy ra khi duyệt nhà xuất bản");
+      }
+    } catch (error) {
+      message.error((error as Error).message || "Có lỗi xảy ra khi duyệt nhà xuất bản");
+    }
+  };
+
+  // Handle reject publisher
+  const handleRejectPublisher = async (publisherId: string) => {
+    try {
+      const response = await statisticsService.rejectPublisher(publisherId);
+      if (response.success) {
+        message.success(response.message || "Từ chối nhà xuất bản thành công");
+        refetchPublishers();
+      } else {
+        message.error(response.message || "Có lỗi xảy ra khi từ chối nhà xuất bản");
+      }
+    } catch (error) {
+      message.error((error as Error).message || "Có lỗi xảy ra khi từ chối nhà xuất bản");
+    }
+  };
+
+  // Pending Publishers columns for the table
+  const publisherColumns: ColumnsType<IPendingPublisher> = [
+    {
+      title: "Người dùng",
+      dataIndex: "username",
+      key: "username",
+      render: (_: unknown, record: IPendingPublisher) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Avatar src={record.avatar} size={32}>
+            {record.username.charAt(0).toUpperCase()}
+          </Avatar>
+          <div>
+            <Text strong>{record.username}</Text>
+            <br />
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              {record.email}
+            </Text>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Ngày đăng ký",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date: string) =>
+        format(new Date(date), "dd/MM/yyyy", { locale: vi }),
+    },
+    {
+      title: "Chờ duyệt",
+      dataIndex: "waitingDays",
+      key: "waitingDays",
+      render: (days: number) => <Text>{days} ngày</Text>,
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "accountStatus",
+      key: "accountStatus",
+      render: (status: string) => {
+        const statusMap: Record<string, { color: string; text: string }> = {
+          NOT_VERIFY: { color: "warning", text: "Chưa xác thực" },
+          VERIFIED: { color: "success", text: "Đã xác thực" },
+          BANNED: { color: "error", text: "Đã cấm" },
+        };
+        const statusInfo = statusMap[status] || {
+          color: "default",
+          text: status,
+        };
+        return <Tag color={statusInfo.color}>{statusInfo.text}</Tag>;
+      },
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      render: (_: unknown, record: IPendingPublisher) => (
+        <Space size="small">
+          <Button
+            type="primary"
+            size="small"
+            icon={<CheckOutlined />}
+            onClick={() => handleApprovePublisher(record.id)}
+          >
+            Duyệt
+          </Button>
+          <Button
+            danger
+            size="small"
+            icon={<CloseOutlined />}
+            onClick={() => handleRejectPublisher(record.id)}
+          >
+            Từ chối
+          </Button>
+        </Space>
+      ),
+    },
+  ];
 
   // Build KPI cards with real data
   const kpiCards = [
@@ -228,6 +340,22 @@ export default function DashboardPage() {
               pagination={false}
               size="small"
               loading={ordersLoading}
+            />
+          </Card>
+        </Col>
+      </Row>
+
+      {/* Pending Publishers Section */}
+      <Row gutter={[16, 16]}>
+        <Col xs={24}>
+          <Card title="Nhà xuất bản chờ duyệt" className="publishers-card">
+            <Table
+              columns={publisherColumns}
+              dataSource={pendingPublishers}
+              rowKey="id"
+              pagination={false}
+              size="small"
+              loading={publishersLoading}
             />
           </Card>
         </Col>

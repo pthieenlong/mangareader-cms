@@ -78,3 +78,16 @@ export interface IRevenueChartItem {
   ordersCount: number;
   totalRevenue: number;
 }
+
+// Pending Publisher for dashboard
+export interface IPendingPublisher {
+  id: string;
+  username: string;
+  email: string;
+  avatar: string;
+  accountStatus: string;
+  role: string;
+  createdAt: string;
+  updatedAt: string;
+  waitingDays: number;
+}

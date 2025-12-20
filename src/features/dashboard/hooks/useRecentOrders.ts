@@ -12,7 +12,7 @@ export function useRecentOrders(limit: number = 5) {
     setLoading(true);
     setError(null);
     try {
-      const response = await statisticsService.getRecentOrders(limit);
+      const response = await statisticsService.getRecentOrders();
       if (response.success && response.data) {
         setOrders(response.data as IRecentOrder[]);
       } else {
@@ -42,5 +42,3 @@ export function useRecentOrders(limit: number = 5) {
     refetch: fetchRecentOrders,
   };
 }
-
-

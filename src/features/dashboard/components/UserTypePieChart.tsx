@@ -53,7 +53,7 @@ export function UserTypePieChart({ data, loading }: UserTypePieChartProps) {
   }));
 
   return (
-    <ResponsiveContainer width="100%" height={240}>
+    <ResponsiveContainer width="100%" height={260}>
       <PieChart>
         <Pie
           data={chartData}
@@ -77,5 +77,3 @@ export function UserTypePieChart({ data, loading }: UserTypePieChartProps) {
     </ResponsiveContainer>
   );
 }
-
-

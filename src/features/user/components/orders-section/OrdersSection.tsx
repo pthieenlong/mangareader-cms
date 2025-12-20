@@ -41,13 +41,6 @@ export function OrdersSection({
       width: 150,
     },
     {
-      title: "Người mua",
-      dataIndex: "userName",
-      key: "userName",
-      width: 160,
-      render: (value: string) => value || "-",
-    },
-    {
       title: "Ngày tạo",
       dataIndex: "createdAt",
       key: "createdAt",
@@ -88,7 +81,7 @@ export function OrdersSection({
     {
       title: "Hành động",
       key: "actions",
-      width: 120,
+      width: 160,
       fixed: "right",
       render: (_: unknown, record: IUserPurchasedOrder) => (
         <Button

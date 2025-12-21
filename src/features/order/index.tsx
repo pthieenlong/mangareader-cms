@@ -9,6 +9,7 @@ import {
   Tag,
   Input,
   Select,
+  Avatar,
 } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { SearchOutlined, EyeOutlined } from "@ant-design/icons";
@@ -91,25 +92,30 @@ export default function OrderPage() {
     },
     {
       title: "Mã đơn hàng",
-      dataIndex: "id",
-      key: "id",
-      width: 200,
-      render: (id: string) => (
+      dataIndex: "orderCode",
+      key: "orderCode",
+      width: 150,
+      render: (orderCode: string) => (
         <Text code style={{ fontSize: "12px" }}>
-          {id.slice(0, 8)}...
+          {orderCode}
         </Text>
       ),
     },
     {
       title: "Người dùng",
       key: "user",
-      width: 200,
+      width: 250,
       render: (_: unknown, record: IOrder) => (
-        <Space direction="vertical" size={4}>
-          <Text strong>{record.user?.username || "N/A"}</Text>
-          <Text type="secondary" style={{ fontSize: "12px" }}>
-            {record.user?.email || record.userId}
-          </Text>
+        <Space size={12}>
+          <Avatar src={record.user?.avatar} size={40}>
+            {record.user?.username?.[0]?.toUpperCase() || "U"}
+          </Avatar>
+          <Space direction="vertical" size={4}>
+            <Text strong>{record.user?.username || "N/A"}</Text>
+            <Text type="secondary" style={{ fontSize: "12px" }}>
+              {record.user?.email || record.userId}
+            </Text>
+          </Space>
         </Space>
       ),
     },
@@ -241,10 +247,9 @@ export default function OrderPage() {
               current: pagination.page,
               pageSize: pagination.limit,
               total: pagination.totalItems,
-              showSizeChanger: true,
+              showSizeChanger: false,
               showTotal: (total) => `Tổng ${total} đơn hàng`,
               onChange: handlePageChange,
-              onShowSizeChange: handlePageChange,
             }}
             scroll={{ x: 1400 }}
           />

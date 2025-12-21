@@ -113,7 +113,7 @@ export default function OrderDetailPage() {
                     title="Thông tin đơn hàng"
                   >
                     <Descriptions.Item label="Mã đơn">
-                      <Text code>{order.id}</Text>
+                      <Text code>{order.orderCode}</Text>
                     </Descriptions.Item>
                     <Descriptions.Item label="Trạng thái">
                       <Tag color={getOrderStatusColor(order.status)}>
@@ -126,11 +126,8 @@ export default function OrderDetailPage() {
                     <Descriptions.Item label="Phương thức">
                       {getPayingMethodText(order.payingMethod)}
                     </Descriptions.Item>
-                    <Descriptions.Item label="Ngày tạo">
-                      {order.createdAt ? formatDate(order.createdAt) : "-"}
-                    </Descriptions.Item>
                     <Descriptions.Item label="Ngày thanh toán">
-                      {order.paidAt ? formatDate(order.paidAt) : "-"}
+                      {order.createdAt ? formatDate(order.createdAt) : "-"}
                     </Descriptions.Item>
                   </Descriptions>
                 </Col>

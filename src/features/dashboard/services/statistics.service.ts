@@ -52,12 +52,9 @@ export const statisticsService = {
     return response.data;
   },
 
-  async getPendingPublishers(limit: number = 5): Promise<CustomResponse> {
+  async getPendingPublishers(): Promise<CustomResponse> {
     const response = await axiosInstance.get<CustomResponse>(
-      "/admin/publishers/pending-approval",
-      {
-        params: { limit },
-      }
+      "/admin/publishers/pending-approval"
     );
     return response.data;
   },

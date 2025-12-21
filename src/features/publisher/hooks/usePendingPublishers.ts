@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { message } from "antd";
-import { orderService } from "../services/order.service";
-import type { IOrder, IOrderListParams } from "../types";
+import { publisherService } from "../services/publisher.service";
+import type { IPublisherApplication, IPendingPublishersParams } from "../types";
 import type { Pagination } from "@/lib/custom";
 
-export function useOrders(initialParams?: IOrderListParams) {
-  const [orders, setOrders] = useState<IOrder[]>([]);
+export function usePendingPublishers(initialParams?: IPendingPublishersParams) {
+  const [applications, setApplications] = useState<IPublisherApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [pagination, setPagination] = useState<Pagination>({
@@ -14,33 +14,33 @@ export function useOrders(initialParams?: IOrderListParams) {
     totalPage: 1,
     totalItems: 0,
   });
-  const [filters, setFilters] = useState<IOrderListParams>({
+  const [filters, setFilters] = useState<IPendingPublishersParams>({
     page: 1,
-    sortBy: "createdAt",
-    sortOrder: "desc",
+    limit: 10,
     ...initialParams,
   });
 
-  const fetchOrders = useCallback(async () => {
+  const fetchPendingPublishers = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await orderService.getOrders(filters);
+      const response = await publisherService.getPendingPublishers(filters);
       if (response.success && response.data) {
-        setOrders(response.data as IOrder[]);
+        setApplications(response.data as IPublisherApplication[]);
         if (response.pagination) {
           setPagination(response.pagination);
         }
       } else {
         const errorMessage =
           response.message ||
-          "Không thể tải danh sách đơn hàng, vui lòng thử lại.";
+          "Không thể tải danh sách publisher đang chờ phê duyệt, vui lòng thử lại.";
         message.warning(errorMessage);
         setError(new Error(errorMessage));
       }
     } catch (err) {
       const errorMessage =
-        (err as Error).message || "Có lỗi xảy ra khi tải danh sách đơn hàng.";
+        (err as Error).message ||
+        "Có lỗi xảy ra khi tải danh sách publisher đang chờ phê duyệt.";
       message.error(errorMessage);
       setError(err as Error);
     } finally {
@@ -49,15 +49,18 @@ export function useOrders(initialParams?: IOrderListParams) {
   }, [filters]);
 
   useEffect(() => {
-    void fetchOrders();
-  }, [fetchOrders]);
+    void fetchPendingPublishers();
+  }, [fetchPendingPublishers]);
 
-  const updateFilters = useCallback((newFilters: Partial<IOrderListParams>) => {
-    setFilters((prev) => ({
-      ...prev,
-      ...newFilters,
-    }));
-  }, []);
+  const updateFilters = useCallback(
+    (newFilters: Partial<IPendingPublishersParams>) => {
+      setFilters((prev) => ({
+        ...prev,
+        ...newFilters,
+      }));
+    },
+    []
+  );
 
   const handlePageChange = useCallback(
     (page: number) => {
@@ -67,12 +70,12 @@ export function useOrders(initialParams?: IOrderListParams) {
   );
 
   return {
-    orders,
+    applications,
     loading,
     error,
     pagination,
     filters,
-    refetch: fetchOrders,
+    refetch: fetchPendingPublishers,
     updateFilters,
     handlePageChange,
   };

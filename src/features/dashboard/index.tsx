@@ -1,4 +1,16 @@
-import { Card, Typography, Table, Tag, Row, Col, Segmented, Avatar, Button, Space, message } from "antd";
+import {
+  Card,
+  Typography,
+  Table,
+  Tag,
+  Row,
+  Col,
+  Segmented,
+  Avatar,
+  Button,
+  Space,
+  message,
+} from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import { AnalyticCard, TrendIndicator } from "@/components";
@@ -22,9 +34,10 @@ const { Title, Text } = Typography;
 const orderColumns: ColumnsType<IRecentOrder> = [
   {
     title: "Mã đơn",
-    dataIndex: "id",
+    dataIndex: "orderCode",
     key: "id",
-    render: (text: string) => <Text strong>{text.slice(0, 8)}...</Text>,
+    width: 140,
+    render: (text: string) => <Text strong>{text}</Text>,
   },
   {
     title: "Ngày",
@@ -94,8 +107,11 @@ export default function DashboardPage() {
   const { data: userStatsData, loading: userStatsLoading } =
     useUserStatistics();
   const { orders: recentOrders, loading: ordersLoading } = useRecentOrders(5);
-  const { publishers: pendingPublishers, loading: publishersLoading, refetch: refetchPublishers } =
-    usePendingPublishers(5);
+  const {
+    publishers: pendingPublishers,
+    loading: publishersLoading,
+    refetch: refetchPublishers,
+  } = usePendingPublishers(5);
 
   // Handle approve publisher
   const handleApprovePublisher = async (publisherId: string) => {
@@ -105,10 +121,14 @@ export default function DashboardPage() {
         message.success(response.message || "Duyệt nhà xuất bản thành công");
         refetchPublishers();
       } else {
-        message.error(response.message || "Có lỗi xảy ra khi duyệt nhà xuất bản");
+        message.error(
+          response.message || "Có lỗi xảy ra khi duyệt nhà xuất bản"
+        );
       }
     } catch (error) {
-      message.error((error as Error).message || "Có lỗi xảy ra khi duyệt nhà xuất bản");
+      message.error(
+        (error as Error).message || "Có lỗi xảy ra khi duyệt nhà xuất bản"
+      );
     }
   };
 
@@ -120,10 +140,14 @@ export default function DashboardPage() {
         message.success(response.message || "Từ chối nhà xuất bản thành công");
         refetchPublishers();
       } else {
-        message.error(response.message || "Có lỗi xảy ra khi từ chối nhà xuất bản");
+        message.error(
+          response.message || "Có lỗi xảy ra khi từ chối nhà xuất bản"
+        );
       }
     } catch (error) {
-      message.error((error as Error).message || "Có lỗi xảy ra khi từ chối nhà xuất bản");
+      message.error(
+        (error as Error).message || "Có lỗi xảy ra khi từ chối nhà xuất bản"
+      );
     }
   };
 

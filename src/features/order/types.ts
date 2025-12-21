@@ -20,6 +20,7 @@ export interface IOrderBookDetail {
   title: string;
   slug?: string;
   thumbnail?: string | null;
+  author?: string;
 }
 
 export interface IOrderChapterDetail {
@@ -44,6 +45,7 @@ export interface IOrderItem {
 
 export interface IOrder {
   id: string;
+  orderCode: string;
   userId: string;
   totalAmount: number;
   status: OrderStatus;
@@ -56,6 +58,7 @@ export interface IOrder {
     id: string;
     username: string;
     email: string;
+    avatar?: string;
   };
 }
 

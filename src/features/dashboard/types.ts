@@ -61,6 +61,7 @@ export interface IBookStatistics {
 // Recent Order for dashboard
 export interface IRecentOrder {
   id: string;
+  orderCode?: string;
   userId: string;
   user?: {
     username: string;

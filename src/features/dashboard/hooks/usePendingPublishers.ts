@@ -12,7 +12,7 @@ export function usePendingPublishers(limit: number = 5) {
     setLoading(true);
     setError(null);
     try {
-      const response = await statisticsService.getPendingPublishers(limit);
+      const response = await statisticsService.getPendingPublishers();
       if (response.success && response.data?.publishers) {
         setPublishers(response.data.publishers as IPendingPublisher[]);
       } else {
@@ -23,7 +23,8 @@ export function usePendingPublishers(limit: number = 5) {
       }
     } catch (err) {
       const errorMessage =
-        (err as Error).message || "Có lỗi xảy ra khi tải danh sách nhà xuất bản chờ duyệt.";
+        (err as Error).message ||
+        "Có lỗi xảy ra khi tải danh sách nhà xuất bản chờ duyệt.";
       message.error(errorMessage);
       setError(err as Error);
     } finally {

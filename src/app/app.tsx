@@ -6,8 +6,6 @@ import {
   BookOutlined,
   UserOutlined,
   ShoppingCartOutlined,
-  FileTextOutlined,
-  SettingOutlined,
   AppstoreOutlined,
 } from "@ant-design/icons";
 import {
@@ -65,21 +63,6 @@ export default function AppLayout() {
       label: "Quản lý đơn hàng",
       icon: <ShoppingCartOutlined />,
     },
-    {
-      key: "/content",
-      label: "Quản lý nội dung",
-      icon: <FileTextOutlined />,
-    },
-    {
-      key: "/notifications",
-      label: "Thông báo",
-      icon: <BellOutlined />,
-    },
-    {
-      key: "/settings",
-      label: "Cài đặt",
-      icon: <SettingOutlined />,
-    },
   ];
 
   const breadcrumbs = useMemo(() => {
@@ -94,9 +77,6 @@ export default function AppLayout() {
       categories: "Quản lý danh mục",
       user: "Quản lý người dùng",
       ecommerce: "Quản lý đơn hàng",
-      content: "Quản lý nội dung",
-      notifications: "Thông báo",
-      settings: "Cài đặt",
     };
     const pathLabelMap: Record<string, string> = {
       "/book/create": "Tạo truyện",

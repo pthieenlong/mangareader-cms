@@ -3,7 +3,7 @@ import { message } from "antd";
 import { statisticsService } from "../services/statistics.service";
 import type { IRecentOrder } from "../types";
 
-export function useRecentOrders(limit: number = 5) {
+export function useRecentOrders() {
   const [orders, setOrders] = useState<IRecentOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -29,7 +29,7 @@ export function useRecentOrders(limit: number = 5) {
     } finally {
       setLoading(false);
     }
-  }, [limit]);
+  }, []);
 
   useEffect(() => {
     void fetchRecentOrders();

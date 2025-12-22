@@ -3,7 +3,7 @@ import { message } from "antd";
 import { statisticsService } from "../services/statistics.service";
 import type { IPendingPublisher } from "../types";
 
-export function usePendingPublishers(limit: number = 5) {
+export function usePendingPublishers() {
   const [publishers, setPublishers] = useState<IPendingPublisher[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -30,7 +30,7 @@ export function usePendingPublishers(limit: number = 5) {
     } finally {
       setLoading(false);
     }
-  }, [limit]);
+  }, []);
 
   useEffect(() => {
     void fetchPendingPublishers();

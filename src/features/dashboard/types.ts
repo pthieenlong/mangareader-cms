@@ -92,3 +92,19 @@ export interface IPendingPublisher {
   updatedAt: string;
   waitingDays: number;
 }
+
+// Pending Book for dashboard
+export interface IPendingBook {
+  id: string;
+  title: string;
+  slug: string;
+  thumbnail: string | null;
+  author: string;
+  status: string;
+  createdAt: string;
+  publisher?: {
+    id: string;
+    username: string;
+    avatar?: string | null;
+  };
+}

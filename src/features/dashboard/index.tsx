@@ -22,10 +22,13 @@ import { useOverviewStatistics } from "./hooks/useOverviewStatistics";
 import { useUserStatistics } from "./hooks/useUserStatistics";
 import { useRecentOrders } from "./hooks/useRecentOrders";
 import { usePendingPublishers } from "./hooks/usePendingPublishers";
+import { usePendingBooks } from "./hooks/usePendingBooks";
 import { useRevenueChart, type TimeRange } from "./hooks/useRevenueChart";
 import { RevenueChart, UserTypePieChart } from "./components";
 import type { IRecentOrder, IPendingPublisher } from "./types";
+import type { IBook } from "@/features/book/types";
 import { statisticsService } from "./services/statistics.service";
+import { router } from "@/app/router.instance";
 import "./dashboard.scss";
 
 const { Title, Text } = Typography;
@@ -106,12 +109,13 @@ export default function DashboardPage() {
     useOverviewStatistics();
   const { data: userStatsData, loading: userStatsLoading } =
     useUserStatistics();
-  const { orders: recentOrders, loading: ordersLoading } = useRecentOrders(5);
+  const { orders: recentOrders, loading: ordersLoading } = useRecentOrders();
   const {
     publishers: pendingPublishers,
     loading: publishersLoading,
     refetch: refetchPublishers,
-  } = usePendingPublishers(5);
+  } = usePendingPublishers();
+  const { books: pendingBooks, loading: booksLoading } = usePendingBooks(5);
 
   // Handle approve publisher
   const handleApprovePublisher = async (publisherId: string) => {
@@ -150,6 +154,59 @@ export default function DashboardPage() {
       );
     }
   };
+
+  // Pending Books columns for the table
+  const bookColumns: ColumnsType<IBook> = [
+    {
+      title: "Truyện",
+      dataIndex: "title",
+      key: "title",
+      render: (_: unknown, record: IBook) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Avatar src={record.thumbnail} size={32} shape="square">
+            {record.title.charAt(0).toUpperCase()}
+          </Avatar>
+          <div>
+            <Typography.Link
+              strong
+              onClick={() => {
+                router.navigate({
+                  to: "/book/$slug",
+                  params: { slug: record.slug },
+                } as never);
+              }}
+            >
+              {record.title.substring(0, 8)}...
+            </Typography.Link>
+            <br />
+            <Text type="secondary" style={{ fontSize: 12 }}>
+              {record.author.substring(0, 8)}...
+            </Text>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: "Nhà xuất bản",
+      dataIndex: "publisher",
+      key: "publisher",
+      render: (_: unknown, record: IBook) => (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <Avatar src={record.publisher?.avatar} size={24}>
+            {record.publisher?.username?.charAt(0).toUpperCase()}
+          </Avatar>
+          <Text>{record.publisher?.username || "N/A"}</Text>
+        </div>
+      ),
+    },
+    {
+      title: "Ngày tạo",
+      dataIndex: "createdAt",
+      key: "createdAt",
+      render: (date: string) =>
+        format(new Date(date), "dd/MM/yyyy", { locale: vi }),
+    },
+  ];
 
   // Pending Publishers columns for the table
   const publisherColumns: ColumnsType<IPendingPublisher> = [
@@ -369,9 +426,21 @@ export default function DashboardPage() {
         </Col>
       </Row>
 
-      {/* Pending Publishers Section */}
+      {/* Pending Books & Publishers Section */}
       <Row gutter={[16, 16]}>
-        <Col xs={24}>
+        <Col xs={24} lg={12}>
+          <Card title="Truyện chờ duyệt" className="books-card">
+            <Table
+              columns={bookColumns}
+              dataSource={pendingBooks}
+              rowKey="id"
+              pagination={false}
+              size="small"
+              loading={booksLoading}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} lg={12}>
           <Card title="Nhà xuất bản chờ duyệt" className="publishers-card">
             <Table
               columns={publisherColumns}

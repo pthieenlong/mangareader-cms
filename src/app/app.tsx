@@ -1,6 +1,5 @@
 import { Outlet, useLocation, useRouter } from "@tanstack/react-router";
 import {
-  BellOutlined,
   DownOutlined,
   DashboardOutlined,
   BookOutlined,
@@ -20,6 +19,7 @@ import {
 } from "antd";
 import type { ReactNode } from "react";
 import { useMemo } from "react";
+import NotificationBell from "@/features/notifications/components/NotificationBell";
 import "./app.scss";
 
 const { Header, Sider, Content, Footer } = Layout;
@@ -157,11 +157,7 @@ export default function AppLayout() {
             />
           </div>
           <Space>
-            <Button
-              type="text"
-              icon={<BellOutlined />}
-              aria-label="Notifications"
-            />
+            <NotificationBell />
             <Dropdown menu={{ items: accountMenuItems }} trigger={["click"]}>
               <Button type="text" className="account-button">
                 <Space>

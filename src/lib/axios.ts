@@ -1,6 +1,8 @@
 import axios, { AxiosError } from "axios";
 import type { CustomResponse } from "@/lib/custom";
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+// Get API URL from environment variable, fallback to HTTPS production URL
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://api.mangareader.io.vn";
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,

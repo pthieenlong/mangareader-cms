@@ -16,7 +16,7 @@ export default function NotificationBell() {
   }, [isOpen, refetch]);
 
   const content = (
-    <NotificationDropdown isOpen={isOpen} onClose={() => setIsOpen(false)} />
+    <NotificationDropdown onClose={() => setIsOpen(false)} />
   );
 
   return (

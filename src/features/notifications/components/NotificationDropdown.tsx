@@ -21,7 +21,6 @@ import { vi } from "date-fns/locale";
 const { Text } = Typography;
 
 interface NotificationDropdownProps {
-  isOpen: boolean;
   onClose: () => void;
 }
 
@@ -51,7 +50,6 @@ const getNotificationIcon = (type: string) => {
 };
 
 export default function NotificationDropdown({
-  isOpen,
   onClose,
 }: NotificationDropdownProps) {
   const { notifications, loading, refetch } = useNotifications({

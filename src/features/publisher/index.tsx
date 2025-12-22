@@ -42,11 +42,14 @@ export default function PendingPublishersPage() {
   const handleApprove = async (id: string) => {
     try {
       setApproving(true);
-      await publisherService.approvePublisher(id);
+      console.log("Approving publisher:", id);
+      const response = await publisherService.approvePublisher(id);
+      console.log("Approve response:", response);
       message.success("Phê duyệt publisher thành công");
-      refetch();
+      await refetch();
       setShowDetailsModal(false);
     } catch (error: any) {
+      console.error("Approve error:", error);
       message.error(error?.response?.data?.message || "Phê duyệt thất bại");
     } finally {
       setApproving(false);
@@ -56,11 +59,14 @@ export default function PendingPublishersPage() {
   const handleReject = async (id: string, reason: string) => {
     try {
       setRejecting(true);
-      await publisherService.rejectPublisher(id, reason);
+      console.log("Rejecting publisher:", id, "reason:", reason);
+      const response = await publisherService.rejectPublisher(id, reason);
+      console.log("Reject response:", response);
       message.success("Từ chối publisher thành công");
-      refetch();
+      await refetch();
       setShowDetailsModal(false);
     } catch (error: any) {
+      console.error("Reject error:", error);
       message.error(error?.response?.data?.message || "Từ chối thất bại");
     } finally {
       setRejecting(false);

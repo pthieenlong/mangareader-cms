@@ -1,4 +1,4 @@
-import { Card, Typography, Table, Space, Avatar, Tag, Button, Modal, message } from "antd";
+import { Card, Typography, Table, Space, Avatar, Tag, Button, Modal, message, Input } from "antd";
 import { CheckOutlined, CloseOutlined, FileTextOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { usePendingPublishers } from "./hooks/usePendingPublishers";
@@ -74,13 +74,34 @@ export default function PendingPublishersPage() {
   };
 
   const showRejectConfirm = (application: IPublisherApplication) => {
+    let rejectReason = "Thông tin đăng ký chưa đầy đủ hoặc chưa đáp ứng yêu cầu. Vui lòng kiểm tra lại và nộp đơn lại.";
+
     Modal.confirm({
       title: "Từ chối đơn đăng ký",
-      content: "Bạn có chắc chắn muốn từ chối đơn này?",
+      content: (
+        <div>
+          <p style={{ marginBottom: 16 }}>Vui lòng nhập lý do từ chối:</p>
+          <Input.TextArea
+            rows={4}
+            placeholder="Ví dụ: Thông tin cá nhân chưa đầy đủ, thiếu mô tả mục đích xuất bản..."
+            onChange={(e) => {
+              rejectReason = e.target.value;
+            }}
+            defaultValue={rejectReason}
+          />
+        </div>
+      ),
       okText: "Từ chối",
       cancelText: "Hủy",
       okButtonProps: { danger: true },
-      onOk: () => handleReject(application.id, "Không đủ điều kiện"),
+      width: 600,
+      onOk: () => {
+        if (!rejectReason.trim()) {
+          message.error("Vui lòng nhập lý do từ chối");
+          return Promise.reject();
+        }
+        return handleReject(application.id, rejectReason.trim());
+      },
     });
   };
 

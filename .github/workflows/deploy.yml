@@ -46,7 +46,7 @@ jobs:
           else
             echo "branch=dev" >> $GITHUB_OUTPUT
             echo "tag=dev" >> $GITHUB_OUTPUT
-            echo "api_url=http://180.93.42.9:3000" >> $GITHUB_OUTPUT
+            echo "api_url=https://api.mangareader.io.vn" >> $GITHUB_OUTPUT
           fi
 
       - name: Extract metadata for Docker

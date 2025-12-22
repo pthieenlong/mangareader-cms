@@ -110,10 +110,6 @@ export default function AppLayout() {
       label: "Thông tin tài khoản",
     },
     {
-      key: "settings",
-      label: "Cài đặt",
-    },
-    {
       type: "divider" as const,
     },
     {

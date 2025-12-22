@@ -18,6 +18,7 @@ import CreateCategoryPage from "@/features/category/create";
 import EditCategoryPage from "@/features/category/edit";
 import OrderPage from "@/features/order";
 import OrderDetailPage from "@/features/order/detail";
+import PendingPublishersPage from "@/features/publisher";
 
 const rootRoute = createRootRoute({
   component: AppLayout,
@@ -113,6 +114,12 @@ const orderDetailRoute = createRoute({
   component: OrderDetailPage,
 });
 
+const publisherRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/publisher",
+  component: PendingPublishersPage,
+});
+
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/",
@@ -135,6 +142,7 @@ rootRoute.addChildren([
   contentRoute,
   notificationsRoute,
   settingsRoute,
+  publisherRoute,
   indexRoute,
 ]);
 

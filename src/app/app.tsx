@@ -6,6 +6,7 @@ import {
   UserOutlined,
   ShoppingCartOutlined,
   AppstoreOutlined,
+  TeamOutlined,
 } from "@ant-design/icons";
 import {
   Layout,
@@ -59,6 +60,11 @@ export default function AppLayout() {
       icon: <UserOutlined />,
     },
     {
+      key: "/publisher",
+      label: "Nhà xuất bản chờ duyệt",
+      icon: <TeamOutlined />,
+    },
+    {
       key: "/orders",
       label: "Quản lý đơn hàng",
       icon: <ShoppingCartOutlined />,
@@ -76,6 +82,7 @@ export default function AppLayout() {
       chapters: "Quản lý chương",
       categories: "Quản lý danh mục",
       user: "Quản lý người dùng",
+      publisher: "Nhà xuất bản chờ duyệt",
       ecommerce: "Quản lý đơn hàng",
     };
     const pathLabelMap: Record<string, string> = {

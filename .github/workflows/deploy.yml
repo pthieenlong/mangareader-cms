@@ -42,9 +42,11 @@ jobs:
           if [ "${{ github.ref }}" = "refs/heads/main" ]; then
             echo "branch=main" >> $GITHUB_OUTPUT
             echo "tag=latest" >> $GITHUB_OUTPUT
+            echo "api_url=https://api.mangareader.io.vn" >> $GITHUB_OUTPUT
           else
             echo "branch=dev" >> $GITHUB_OUTPUT
             echo "tag=dev" >> $GITHUB_OUTPUT
+            echo "api_url=http://180.93.42.9:3000" >> $GITHUB_OUTPUT
           fi
 
       - name: Extract metadata for Docker
@@ -69,7 +71,7 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             BUILDKIT_INLINE_CACHE=1
-            VITE_API_URL=${{ secrets.VITE_API_URL || 'http://180.93.42.9:3000' }}
+            VITE_API_URL=${{ steps.branch.outputs.api_url }}
 
   deploy:
     name: Deploy to VPS

@@ -51,12 +51,64 @@ export interface IBook {
   publisher?: IPublisher;
 }
 
+export interface IPurchasedUser {
+  id: string;
+  username: string;
+  email: string;
+  avatar?: string | null;
+  purchasedAt: string;
+  pricePaid: number;
+  orderCode: string;
+}
+
+export interface IReviewUser {
+  id: string;
+  username: string;
+  avatar?: string | null;
+}
+
+export interface IReview {
+  id: string;
+  ratePoint: number;
+  content: string;
+  agreement: number;
+  chapterNumberAtReview: number;
+  createdAt: string;
+  user: IReviewUser;
+}
+
+export interface ICommentUser {
+  id: string;
+  username: string;
+  avatar?: string | null;
+}
+
+export interface ICommentReply {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: ICommentUser;
+}
+
+export interface IComment {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: ICommentUser;
+  replies?: ICommentReply[];
+}
+
 export interface IBookDetail extends IBook {
   chapterCount?: number;
   totalRevenue?: number;
   totalReviews?: number;
   averageRating?: number;
+  totalPurchases?: number;
+  totalComments?: number;
   chapters?: IChapterSummary[];
+  purchasedUsers?: IPurchasedUser[];
+  reviews?: IReview[];
+  comments?: IComment[];
 }
 
 export interface IBookFormValues {

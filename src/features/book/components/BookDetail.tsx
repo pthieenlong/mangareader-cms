@@ -6,6 +6,9 @@ import {
   InboxOutlined,
   StopOutlined,
   UndoOutlined,
+  ShoppingOutlined,
+  StarOutlined,
+  MessageOutlined,
 } from "@ant-design/icons";
 import {
   Avatar,
@@ -21,6 +24,7 @@ import {
   Row,
   Space,
   Statistic,
+  Tabs,
   Tag,
   Typography,
 } from "antd";
@@ -31,6 +35,9 @@ import type {
   IChapterSummary,
 } from "../types";
 import { formatDate, FALLBACK_IMAGE, formatCurrency } from "@/utils";
+import { BookPurchasers } from "./BookPurchasers";
+import { BookReviews } from "./BookReviews";
+import { BookComments } from "./BookComments";
 import "./BookDetail.scss";
 
 const { Title, Text, Paragraph } = Typography;
@@ -356,40 +363,93 @@ export function BookDetail({
         </Paragraph>
       </Card>
 
-      <Card
-        title="Danh sách chương"
-        className="book-detail__section"
-        bordered={false}
-        extra={<Tag color="geekblue">{totalChapters} chương</Tag>}
-      >
-        <List
-          dataSource={paginatedChapters}
-          renderItem={renderChapterItem}
-          locale={{ emptyText: "Chưa có chương nào được tạo." }}
-          pagination={
-            totalChapters > 0
-              ? {
-                  current: chapterPage,
-                  pageSize: chapterPageSize,
-                  total: totalChapters,
-                  showSizeChanger: true,
-                  pageSizeOptions: [5, 10, 20, 50],
-                  showTotal: (total, range) =>
-                    `Hiển thị ${range[0]} - ${range[1]} trên ${total} chương`,
-                  onChange: (page, pageSize) => {
-                    setChapterPage(page);
-                    setChapterPageSize(pageSize);
-                  },
-                  onShowSizeChange: (page, pageSize) => {
-                    setChapterPage(page);
-                    setChapterPageSize(pageSize);
-                  },
-                  size: "small",
-                }
-              : false
-          }
-        />
-      </Card>
+      <Row gutter={[16, 16]} className="book-detail__content">
+        <Col xs={24} lg={12}>
+          <Tabs
+            defaultActiveKey="purchasers"
+            items={[
+              {
+                key: "purchasers",
+                label: (
+                  <span>
+                    <ShoppingOutlined /> Người mua
+                  </span>
+                ),
+                children: (
+                  <BookPurchasers
+                    purchasedUsers={book.purchasedUsers}
+                    totalPurchases={book.totalPurchases}
+                  />
+                ),
+              },
+              {
+                key: "reviews",
+                label: (
+                  <span>
+                    <StarOutlined /> Đánh giá
+                  </span>
+                ),
+                children: (
+                  <BookReviews
+                    reviews={book.reviews}
+                    totalReviews={book.totalReviews}
+                    averageRating={book.averageRating}
+                  />
+                ),
+              },
+              {
+                key: "comments",
+                label: (
+                  <span>
+                    <MessageOutlined /> Bình luận
+                  </span>
+                ),
+                children: (
+                  <BookComments
+                    comments={book.comments}
+                    totalComments={book.totalComments}
+                  />
+                ),
+              },
+            ]}
+          />
+        </Col>
+        <Col xs={24} lg={12}>
+          <Card
+            title="Danh sách chương"
+            bordered={false}
+            extra={<Tag color="geekblue">{totalChapters} chương</Tag>}
+          >
+            <List
+              dataSource={paginatedChapters}
+              renderItem={renderChapterItem}
+              locale={{ emptyText: "Chưa có chương nào được tạo." }}
+              pagination={
+                totalChapters > 0
+                  ? {
+                      current: chapterPage,
+                      pageSize: chapterPageSize,
+                      total: totalChapters,
+                      showSizeChanger: true,
+                      pageSizeOptions: [5, 10, 20, 50],
+                      showTotal: (total, range) =>
+                        `Hiển thị ${range[0]} - ${range[1]} trên ${total} chương`,
+                      onChange: (page, pageSize) => {
+                        setChapterPage(page);
+                        setChapterPageSize(pageSize);
+                      },
+                      onShowSizeChange: (page, pageSize) => {
+                        setChapterPage(page);
+                        setChapterPageSize(pageSize);
+                      },
+                      size: "small",
+                    }
+                  : false
+              }
+            />
+          </Card>
+        </Col>
+      </Row>
 
       <Modal
         open={modalType !== null}

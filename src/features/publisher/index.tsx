@@ -1,12 +1,15 @@
-import { Card, Typography, Table, Space, Avatar, Tag, Image } from "antd";
+import { Card, Typography, Table, Space, Avatar, Tag, Button, Modal, message } from "antd";
+import { CheckOutlined, CloseOutlined, FileTextOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import { usePendingPublishers } from "./hooks/usePendingPublishers";
 import type { IPublisherApplication } from "./types";
 import { AccountStatus } from "./types";
 import { formatDate } from "@/utils";
+import { useState } from "react";
+import { publisherService } from "./services/publisher.service";
 import "./publisher.scss";
 
-const { Title, Text } = Typography;
+const { Title, Text, Paragraph } = Typography;
 
 const getAccountStatusColor = (status: AccountStatus): string => {
   const colors = {
@@ -29,8 +32,51 @@ const getAccountStatusText = (status: AccountStatus): string => {
 };
 
 export default function PendingPublishersPage() {
-  const { applications, loading, pagination, handlePageChange } =
+  const { applications, loading, pagination, handlePageChange, refetch } =
     usePendingPublishers();
+  const [selectedApplication, setSelectedApplication] = useState<IPublisherApplication | null>(null);
+  const [showDetailsModal, setShowDetailsModal] = useState(false);
+  const [approving, setApproving] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+
+  const handleApprove = async (id: string) => {
+    try {
+      setApproving(true);
+      await publisherService.approvePublisher(id);
+      message.success("Phê duyệt publisher thành công");
+      refetch();
+      setShowDetailsModal(false);
+    } catch (error: any) {
+      message.error(error?.response?.data?.message || "Phê duyệt thất bại");
+    } finally {
+      setApproving(false);
+    }
+  };
+
+  const handleReject = async (id: string, reason: string) => {
+    try {
+      setRejecting(true);
+      await publisherService.rejectPublisher(id, reason);
+      message.success("Từ chối publisher thành công");
+      refetch();
+      setShowDetailsModal(false);
+    } catch (error: any) {
+      message.error(error?.response?.data?.message || "Từ chối thất bại");
+    } finally {
+      setRejecting(false);
+    }
+  };
+
+  const showRejectConfirm = (application: IPublisherApplication) => {
+    Modal.confirm({
+      title: "Từ chối đơn đăng ký",
+      content: "Bạn có chắc chắn muốn từ chối đơn này?",
+      okText: "Từ chối",
+      cancelText: "Hủy",
+      okButtonProps: { danger: true },
+      onOk: () => handleReject(application.id, "Không đủ điều kiện"),
+    });
+  };
 
   const columns: ColumnsType<IPublisherApplication> = [
     {
@@ -74,10 +120,16 @@ export default function PendingPublishersPage() {
       render: (text: string) => <Text strong>{text}</Text>,
     },
     {
-      title: "CCCD",
-      dataIndex: "cccdNumber",
-      key: "cccdNumber",
-      width: 150,
+      title: "Ngày sinh",
+      dataIndex: "dateOfBirth",
+      key: "dateOfBirth",
+      width: 120,
+    },
+    {
+      title: "Số điện thoại",
+      dataIndex: "phoneNumber",
+      key: "phoneNumber",
+      width: 130,
       render: (text: string) => (
         <Text code style={{ fontSize: "12px" }}>
           {text}
@@ -85,71 +137,15 @@ export default function PendingPublishersPage() {
       ),
     },
     {
-      title: "Ngày sinh",
-      dataIndex: "dateOfBirth",
-      key: "dateOfBirth",
-      width: 120,
-      render: (date: string) => formatDate(date),
-    },
-    {
-      title: "Giới tính",
-      dataIndex: "gender",
-      key: "gender",
-      width: 100,
-    },
-    {
-      title: "Quốc tịch",
-      dataIndex: "nationality",
-      key: "nationality",
-      width: 120,
-    },
-    {
-      title: "Quê quán",
-      dataIndex: "placeOfOrigin",
-      key: "placeOfOrigin",
-      width: 200,
+      title: "Lý do đăng ký",
+      dataIndex: "reason",
+      key: "reason",
+      width: 250,
       ellipsis: true,
-    },
-    {
-      title: "Nơi cư trú",
-      dataIndex: "placeOfResidence",
-      key: "placeOfResidence",
-      width: 200,
-      ellipsis: true,
-    },
-    {
-      title: "Ngày hết hạn CCCD",
-      dataIndex: "expiryDate",
-      key: "expiryDate",
-      width: 140,
-      render: (date: string) => formatDate(date),
-    },
-    {
-      title: "CCCD mặt trước",
-      dataIndex: "cccdFrontImage",
-      key: "cccdFrontImage",
-      width: 150,
-      render: (url: string) => (
-        <Image
-          src={url}
-          alt="CCCD mặt trước"
-          width={100}
-          style={{ cursor: "pointer" }}
-        />
-      ),
-    },
-    {
-      title: "CCCD mặt sau",
-      dataIndex: "cccdBackImage",
-      key: "cccdBackImage",
-      width: 150,
-      render: (url: string) => (
-        <Image
-          src={url}
-          alt="CCCD mặt sau"
-          width={100}
-          style={{ cursor: "pointer" }}
-        />
+      render: (text: string) => (
+        <Text ellipsis={{ tooltip: text }} style={{ maxWidth: 250 }}>
+          {text}
+        </Text>
       ),
     },
     {
@@ -158,6 +154,44 @@ export default function PendingPublishersPage() {
       key: "createdAt",
       width: 140,
       render: (date: Date) => formatDate(date.toString()),
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      width: 180,
+      fixed: "right",
+      render: (_: unknown, record: IPublisherApplication) => (
+        <Space>
+          <Button
+            type="link"
+            icon={<FileTextOutlined />}
+            onClick={() => {
+              setSelectedApplication(record);
+              setShowDetailsModal(true);
+            }}
+          >
+            Chi tiết
+          </Button>
+          <Button
+            type="primary"
+            size="small"
+            icon={<CheckOutlined />}
+            onClick={() => handleApprove(record.id)}
+            loading={approving}
+          >
+            Duyệt
+          </Button>
+          <Button
+            danger
+            size="small"
+            icon={<CloseOutlined />}
+            onClick={() => showRejectConfirm(record)}
+            loading={rejecting}
+          >
+            Từ chối
+          </Button>
+        </Space>
+      ),
     },
   ];
 
@@ -185,9 +219,95 @@ export default function PendingPublishersPage() {
             showTotal: (total) => `Tổng ${total} đơn đăng ký`,
             onChange: handlePageChange,
           }}
-          scroll={{ x: 2000 }}
+          scroll={{ x: 1400 }}
         />
       </Card>
+
+      {/* Details Modal */}
+      <Modal
+        title="Chi tiết đơn đăng ký Publisher"
+        open={showDetailsModal}
+        onCancel={() => setShowDetailsModal(false)}
+        width={700}
+        footer={[
+          <Button key="cancel" onClick={() => setShowDetailsModal(false)}>
+            Đóng
+          </Button>,
+          <Button
+            key="reject"
+            danger
+            icon={<CloseOutlined />}
+            onClick={() => selectedApplication && showRejectConfirm(selectedApplication)}
+            loading={rejecting}
+          >
+            Từ chối
+          </Button>,
+          <Button
+            key="approve"
+            type="primary"
+            icon={<CheckOutlined />}
+            onClick={() => selectedApplication && handleApprove(selectedApplication.id)}
+            loading={approving}
+          >
+            Phê duyệt
+          </Button>,
+        ]}
+      >
+        {selectedApplication && (
+          <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+            <div>
+              <Text strong>Người dùng:</Text>
+              <Space style={{ marginLeft: 8 }}>
+                <Avatar src={selectedApplication.user.avatar}>
+                  {selectedApplication.user.username?.[0]?.toUpperCase()}
+                </Avatar>
+                <Space direction="vertical" size={0}>
+                  <Text>{selectedApplication.user.username}</Text>
+                  <Text type="secondary" style={{ fontSize: 12 }}>
+                    {selectedApplication.user.email}
+                  </Text>
+                </Space>
+              </Space>
+            </div>
+            <div>
+              <Text strong>Họ và tên:</Text>
+              <Text style={{ marginLeft: 8 }}>{selectedApplication.fullName}</Text>
+            </div>
+            <div>
+              <Text strong>Ngày sinh:</Text>
+              <Text style={{ marginLeft: 8 }}>{selectedApplication.dateOfBirth}</Text>
+            </div>
+            <div>
+              <Text strong>Số điện thoại:</Text>
+              <Text code style={{ marginLeft: 8 }}>{selectedApplication.phoneNumber}</Text>
+            </div>
+            <div>
+              <Text strong>Lý do đăng ký:</Text>
+              <Paragraph style={{ marginTop: 8, whiteSpace: "pre-wrap" }}>
+                {selectedApplication.reason}
+              </Paragraph>
+            </div>
+            {selectedApplication.personalStoryFiles && selectedApplication.personalStoryFiles.length > 0 && (
+              <div>
+                <Text strong>File đính kèm:</Text>
+                <Space direction="vertical" style={{ marginTop: 8 }}>
+                  {selectedApplication.personalStoryFiles.map((url, index) => (
+                    <a key={index} href={url} target="_blank" rel="noopener noreferrer">
+                      File {index + 1}
+                    </a>
+                  ))}
+                </Space>
+              </div>
+            )}
+            <div>
+              <Text strong>Ngày nộp đơn:</Text>
+              <Text style={{ marginLeft: 8 }}>
+                {formatDate(selectedApplication.createdAt.toString())}
+              </Text>
+            </div>
+          </Space>
+        )}
+      </Modal>
     </div>
   );
 }

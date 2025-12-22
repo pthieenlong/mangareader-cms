@@ -25,16 +25,14 @@ export interface IPublisherApplication {
   userId: string;
   user: IPublisherUser;
   fullName: string;
-  cccdNumber: string;
   dateOfBirth: string;
-  gender: string;
-  nationality: string;
-  placeOfOrigin: string;
-  placeOfResidence: string;
-  expiryDate: string;
-  cccdFrontImage: string;
-  cccdBackImage: string;
+  phoneNumber: string;
+  reason: string;
+  personalStoryFiles: string[] | null;
   status: ApplicationStatus;
+  adminNotes?: string | null;
+  reviewedAt?: Date | null;
+  reviewedBy?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

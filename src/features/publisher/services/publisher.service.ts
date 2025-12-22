@@ -43,4 +43,24 @@ export const publisherService = {
 
     return response.data;
   },
+
+  async approvePublisher(id: string, notes?: string): Promise<CustomResponse> {
+    const response = await axiosInstance.put<CustomResponse>(
+      `/admin/publishers/${id}/approve`,
+      { notes }
+    );
+    return response.data;
+  },
+
+  async rejectPublisher(
+    id: string,
+    reason: string,
+    notes?: string
+  ): Promise<CustomResponse> {
+    const response = await axiosInstance.put<CustomResponse>(
+      `/admin/publishers/${id}/reject`,
+      { reason, notes }
+    );
+    return response.data;
+  },
 };

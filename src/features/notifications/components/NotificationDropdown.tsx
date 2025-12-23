@@ -193,7 +193,7 @@ export default function NotificationDropdown({
                   description={
                     <Space size={4} direction="vertical" style={{ width: "100%" }}>
                       <Text type="secondary" style={{ fontSize: 13 }}>
-                        {notification.message}
+                        {notification.body}
                       </Text>
                       <Text type="secondary" style={{ fontSize: 12 }}>
                         {formatDistanceToNow(new Date(notification.createdAt), {

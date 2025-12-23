@@ -8,6 +8,7 @@ export function useNotifications(initialFilters?: INotificationFilter) {
   const [notifications, setNotifications] = useState<INotification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   const [pagination, setPagination] = useState<Pagination>({
     page: 1,
     limit: 10,
@@ -26,10 +27,29 @@ export function useNotifications(initialFilters?: INotificationFilter) {
     try {
       const response = await notificationService.getNotifications(filters);
       if (response.success && response.data) {
-        const nextNotifications = response.data as INotification[];
-        setNotifications(nextNotifications);
-        if (response.pagination) {
-          setPagination(response.pagination as Pagination);
+        // Parse nested API response structure
+        const data = response.data as {
+          notifications: INotification[];
+          totalNotifications: number;
+          unreadCount: number;
+          pagination: {
+            page: number;
+            limit: number;
+            totalPages: number;
+          };
+        };
+
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+
+        // Map pagination fields: totalPages → totalPage, totalNotifications → totalItems
+        if (data.pagination) {
+          setPagination({
+            page: data.pagination.page,
+            limit: data.pagination.limit,
+            totalPage: data.pagination.totalPages,
+            totalItems: data.totalNotifications,
+          });
         }
       } else {
         const errorMessage =
@@ -68,6 +88,7 @@ export function useNotifications(initialFilters?: INotificationFilter) {
     error,
     pagination,
     filters,
+    unreadCount,
     refetch: fetchNotifications,
     updateFilters,
   };

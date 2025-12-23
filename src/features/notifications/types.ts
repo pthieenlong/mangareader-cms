@@ -2,7 +2,7 @@ export interface INotification {
   id: string;
   userId: string;
   title: string;
-  message: string;
+  body: string;
   type: NotificationType;
   isRead: boolean;
   relatedItemType?: string | null;

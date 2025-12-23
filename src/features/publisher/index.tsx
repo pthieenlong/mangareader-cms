@@ -38,6 +38,9 @@ export default function PendingPublishersPage() {
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [approving, setApproving] = useState(false);
   const [rejecting, setRejecting] = useState(false);
+  const [rejectModalVisible, setRejectModalVisible] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
+  const [rejectingApplication, setRejectingApplication] = useState<IPublisherApplication | null>(null);
 
   const handleApprove = async (id: string) => {
     try {
@@ -56,14 +59,28 @@ export default function PendingPublishersPage() {
     }
   };
 
-  const handleReject = async (id: string, reason: string) => {
+  const showRejectModal = (application: IPublisherApplication) => {
+    setRejectingApplication(application);
+    setRejectReason("Thông tin đăng ký chưa đầy đủ hoặc chưa đáp ứng yêu cầu. Vui lòng kiểm tra lại và nộp đơn lại.");
+    setRejectModalVisible(true);
+  };
+
+  const handleRejectConfirm = async () => {
+    if (!rejectReason.trim()) {
+      message.error("Vui lòng nhập lý do từ chối");
+      return;
+    }
+
+    if (!rejectingApplication) return;
+
     try {
       setRejecting(true);
-      console.log("Rejecting publisher:", id, "reason:", reason);
-      const response = await publisherService.rejectPublisher(id, reason);
+      console.log("Rejecting publisher:", rejectingApplication.id, "reason:", rejectReason);
+      const response = await publisherService.rejectPublisher(rejectingApplication.id, rejectReason.trim());
       console.log("Reject response:", response);
       message.success("Từ chối publisher thành công");
       await refetch();
+      setRejectModalVisible(false);
       setShowDetailsModal(false);
     } catch (error: any) {
       console.error("Reject error:", error);
@@ -73,36 +90,10 @@ export default function PendingPublishersPage() {
     }
   };
 
-  const showRejectConfirm = (application: IPublisherApplication) => {
-    let rejectReason = "Thông tin đăng ký chưa đầy đủ hoặc chưa đáp ứng yêu cầu. Vui lòng kiểm tra lại và nộp đơn lại.";
-
-    Modal.confirm({
-      title: "Từ chối đơn đăng ký",
-      content: (
-        <div>
-          <p style={{ marginBottom: 16 }}>Vui lòng nhập lý do từ chối:</p>
-          <Input.TextArea
-            rows={4}
-            placeholder="Ví dụ: Thông tin cá nhân chưa đầy đủ, thiếu mô tả mục đích xuất bản..."
-            onChange={(e) => {
-              rejectReason = e.target.value;
-            }}
-            defaultValue={rejectReason}
-          />
-        </div>
-      ),
-      okText: "Từ chối",
-      cancelText: "Hủy",
-      okButtonProps: { danger: true },
-      width: 600,
-      onOk: () => {
-        if (!rejectReason.trim()) {
-          message.error("Vui lòng nhập lý do từ chối");
-          return Promise.reject();
-        }
-        return handleReject(application.id, rejectReason.trim());
-      },
-    });
+  const handleRejectCancel = () => {
+    setRejectModalVisible(false);
+    setRejectReason("");
+    setRejectingApplication(null);
   };
 
   const columns: ColumnsType<IPublisherApplication> = [
@@ -212,7 +203,7 @@ export default function PendingPublishersPage() {
             danger
             size="small"
             icon={<CloseOutlined />}
-            onClick={() => showRejectConfirm(record)}
+            onClick={() => showRejectModal(record)}
             loading={rejecting}
           >
             Từ chối
@@ -264,7 +255,7 @@ export default function PendingPublishersPage() {
             key="reject"
             danger
             icon={<CloseOutlined />}
-            onClick={() => selectedApplication && showRejectConfirm(selectedApplication)}
+            onClick={() => selectedApplication && showRejectModal(selectedApplication)}
             loading={rejecting}
           >
             Từ chối
@@ -334,6 +325,28 @@ export default function PendingPublishersPage() {
             </div>
           </Space>
         )}
+      </Modal>
+
+      {/* Reject Modal */}
+      <Modal
+        title="Từ chối đơn đăng ký"
+        open={rejectModalVisible}
+        onCancel={handleRejectCancel}
+        onOk={handleRejectConfirm}
+        okText="Từ chối"
+        cancelText="Hủy"
+        okButtonProps={{ danger: true, loading: rejecting }}
+        width={600}
+      >
+        <div>
+          <p style={{ marginBottom: 16 }}>Vui lòng nhập lý do từ chối:</p>
+          <Input.TextArea
+            rows={4}
+            placeholder="Ví dụ: Thông tin cá nhân chưa đầy đủ, thiếu mô tả mục đích xuất bản..."
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+          />
+        </div>
       </Modal>
     </div>
   );

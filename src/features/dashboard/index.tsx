@@ -39,7 +39,7 @@ const orderColumns: ColumnsType<IRecentOrder> = [
     title: "Mã đơn",
     dataIndex: "orderCode",
     key: "id",
-    width: 140,
+    width: 220,
     render: (text: string) => <Text strong>{text}</Text>,
   },
   {

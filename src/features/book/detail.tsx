@@ -8,7 +8,7 @@ import { bookService } from "./services/book.service";
 
 export default function BookDetailPage() {
   const { slug } = useParams({ strict: false }) as { slug: string };
-  const { book, loading, error, refetch } = useBookDetail(slug);
+  const { book, loading, error, deleting, refetch, deleteComment } = useBookDetail(slug);
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
@@ -144,7 +144,9 @@ export default function BookDetailPage() {
           setActionLoading(false);
         }
       }}
+      onDeleteComment={deleteComment}
       actionLoading={actionLoading}
+      deleting={deleting}
     />
   );
 }

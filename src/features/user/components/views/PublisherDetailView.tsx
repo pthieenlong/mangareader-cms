@@ -3,7 +3,6 @@ import type {
   IPublisherBook,
   IPublisherOverviewStats,
   IUserProfileDetail,
-  IUserProfileUpdatePayload,
 } from "../../types";
 import { BookTable } from "../book-table";
 import { ProfileCard } from "../profile-card/ProfileCard";
@@ -25,13 +24,9 @@ interface PublisherDetailViewProps {
     totalOrders: number;
   };
   onOrdersPageChange: (page: number, pageSize?: number) => void;
-  onUpdateProfile: (payload: IUserProfileUpdatePayload) => Promise<void>;
-  onUpdateAvatar: (avatar: File) => Promise<void>;
   onBanUser: () => Promise<void>;
   onUnbanUser: () => Promise<void>;
-  saving: boolean;
   banning: boolean;
-  updatingAvatar: boolean;
 }
 
 export function PublisherDetailView({
@@ -44,13 +39,9 @@ export function PublisherDetailView({
   ordersLoading,
   ordersPagination,
   onOrdersPageChange,
-  onUpdateAvatar,
-  onUpdateProfile,
   onBanUser,
   onUnbanUser,
-  saving,
   banning,
-  updatingAvatar,
 }: PublisherDetailViewProps) {
   return (
     <Space direction="vertical" size="large" style={{ width: "100%" }}>
@@ -67,11 +58,7 @@ export function PublisherDetailView({
           <Col xs={24} md={9}>
             <ProfileCard
               profile={profile}
-              saving={saving}
               banning={banning}
-              updatingAvatar={updatingAvatar}
-              onUpdateProfile={onUpdateProfile}
-              onUpdateAvatar={onUpdateAvatar}
               onBanUser={onBanUser}
               onUnbanUser={onUnbanUser}
             />

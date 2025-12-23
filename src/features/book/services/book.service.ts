@@ -73,4 +73,15 @@ export const bookService = {
     );
     return response.data;
   },
+
+  async deleteComment(
+    bookSlug: string,
+    commentId: string,
+    userId: string
+  ): Promise<CustomResponse> {
+    const response = await axiosInstance.delete<CustomResponse>(
+      `/admin/books/${bookSlug}/comment/${commentId}/${userId}`
+    );
+    return response.data;
+  },
 };

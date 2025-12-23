@@ -74,7 +74,9 @@ export interface BookDetailProps {
   }) => Promise<void> | void;
   onArchive?: () => Promise<void> | void;
   onUnarchive?: () => Promise<void> | void;
+  onDeleteComment?: (commentId: string, userId: string) => Promise<void>;
   actionLoading?: boolean;
+  deleting?: boolean;
 }
 
 const getCategories = (bookCategories?: IBookCategoryRelation[]) =>
@@ -153,7 +155,9 @@ export function BookDetail({
   onReject,
   onArchive,
   onUnarchive,
+  onDeleteComment,
   actionLoading = false,
+  deleting = false,
 }: BookDetailProps) {
   const categories = getCategories(book.bookCategories);
   const [chapterPage, setChapterPage] = useState(1);
@@ -408,6 +412,8 @@ export function BookDetail({
                   <BookComments
                     comments={book.comments}
                     totalComments={book.totalComments}
+                    onDeleteComment={onDeleteComment}
+                    deleting={deleting}
                   />
                 ),
               },

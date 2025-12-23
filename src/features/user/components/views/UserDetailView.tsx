@@ -2,7 +2,6 @@ import { Col, Row, Space } from "antd";
 import type {
   IUserFavoriteBook,
   IUserProfileDetail,
-  IUserProfileUpdatePayload,
   IUserPurchasedOrder,
   IUserStatistics,
 } from "../../types";
@@ -26,14 +25,10 @@ interface UserDetailViewProps {
     totalOrders: number;
   };
   onOrdersPageChange: (page: number, pageSize?: number) => void;
-  onUpdateProfile: (payload: IUserProfileUpdatePayload) => Promise<void>;
-  onUpdateAvatar: (avatar: File) => Promise<void>;
   onBanUser: () => Promise<void>;
   onUnbanUser: () => Promise<void>;
   onViewOrder: (order: IUserPurchasedOrder) => void;
-  saving: boolean;
   banning: boolean;
-  updatingAvatar: boolean;
 }
 
 export function UserDetailView({
@@ -47,14 +42,10 @@ export function UserDetailView({
   ordersLoading,
   ordersPagination,
   onOrdersPageChange,
-  onUpdateAvatar,
-  onUpdateProfile,
   onBanUser,
   onUnbanUser,
   onViewOrder,
-  saving,
   banning,
-  updatingAvatar,
 }: UserDetailViewProps) {
   return (
     <Space direction="vertical" size="large" style={{ width: "100%" }}>
@@ -72,11 +63,7 @@ export function UserDetailView({
           <Col xs={24} md={9}>
             <ProfileCard
               profile={profile}
-              saving={saving}
               banning={banning}
-              updatingAvatar={updatingAvatar}
-              onUpdateProfile={onUpdateProfile}
-              onUpdateAvatar={onUpdateAvatar}
               onBanUser={onBanUser}
               onUnbanUser={onUnbanUser}
             />

@@ -22,14 +22,10 @@ export default function UserDetailPage() {
 
   const {
     loading,
-    saving,
     banning,
-    updatingAvatar,
     overview,
     profile,
     publisherBooks,
-    updateProfile,
-    updateAvatar,
     refresh,
     banUser,
     unbanUser,
@@ -132,13 +128,9 @@ export default function UserDetailPage() {
               ordersLoading={publisherOrdersLoading}
               ordersPagination={publisherOrdersPagination}
               onOrdersPageChange={handlePageChange}
-              onUpdateProfile={updateProfile}
-              onUpdateAvatar={updateAvatar}
               onBanUser={banUser}
               onUnbanUser={unbanUser}
-              saving={saving}
               banning={banning}
-              updatingAvatar={updatingAvatar}
             />
           ) : (
             <UserDetailView
@@ -151,14 +143,10 @@ export default function UserDetailPage() {
               ordersLoading={purchasedOrdersLoading}
               ordersPagination={purchasedOrdersPagination}
               onOrdersPageChange={handlePageChange}
-              onUpdateProfile={updateProfile}
-              onUpdateAvatar={updateAvatar}
               onBanUser={banUser}
               onUnbanUser={unbanUser}
               onViewOrder={handleViewOrder}
-              saving={saving}
               banning={banning}
-              updatingAvatar={updatingAvatar}
             />
           )
         ) : (

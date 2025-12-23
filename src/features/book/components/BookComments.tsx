@@ -1,5 +1,5 @@
-import { Avatar, Card, Empty, List, Space, Typography } from "antd";
-import { ClockCircleOutlined, MessageOutlined } from "@ant-design/icons";
+import { Avatar, Button, Card, Empty, List, Popconfirm, Space, Typography } from "antd";
+import { ClockCircleOutlined, DeleteOutlined, MessageOutlined } from "@ant-design/icons";
 import type { IComment } from "../types";
 import { formatDate } from "@/utils";
 
@@ -9,12 +9,16 @@ export interface BookCommentsProps {
   comments?: IComment[];
   totalComments?: number;
   loading?: boolean;
+  onDeleteComment?: (commentId: string, userId: string) => Promise<void>;
+  deleting?: boolean;
 }
 
 export function BookComments({
   comments = [],
   totalComments = 0,
   loading = false,
+  onDeleteComment,
+  deleting = false,
 }: BookCommentsProps) {
   return (
     <Card
@@ -52,15 +56,36 @@ export function BookComments({
                   </Space>
                 }
               />
-              <Paragraph
-                style={{
-                  marginTop: 8,
-                  marginLeft: 48,
-                  whiteSpace: "pre-wrap",
-                }}
-              >
-                {comment.content}
-              </Paragraph>
+              <div style={{ marginLeft: 48 }}>
+                <Paragraph
+                  style={{
+                    marginTop: 8,
+                    whiteSpace: "pre-wrap",
+                  }}
+                >
+                  {comment.content}
+                </Paragraph>
+                {onDeleteComment && (
+                  <Popconfirm
+                    title="Xóa bình luận"
+                    description="Bạn có chắc chắn muốn xóa bình luận này không?"
+                    onConfirm={() => onDeleteComment(comment.id, comment.user.id)}
+                    okText="Xóa"
+                    cancelText="Hủy"
+                    okButtonProps={{ danger: true }}
+                  >
+                    <Button
+                      type="text"
+                      danger
+                      size="small"
+                      icon={<DeleteOutlined />}
+                      loading={deleting}
+                    >
+                      Xóa
+                    </Button>
+                  </Popconfirm>
+                )}
+              </div>
 
               {/* Nested Replies */}
               {comment.replies && comment.replies.length > 0 && (
